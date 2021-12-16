@@ -1,6 +1,19 @@
 #! /bin/bash
 set -eux
 
+EMSCRIPTEN_VERSION=3.0.0
+
+if ! which emcc >/dev/null; then
+  echo "Please install emscripten-${EMSCRIPTEN_VERSION}"
+  exit 1
+fi
+
+EMSCRIPTEN_ACTUAL_VERSION=$(emcc --version | head -1 | grep -o -E '[0-9]+[.][0-9]+[.][0-9]')
+if [ "$EMSCRIPTEN_ACTUAL_VERSION" != "$EMSCRIPTEN_VERSION" ]; then
+  echo "Please install emscripten-${EMSCRIPTEN_VERSION} (found version ${EMSCRIPTEN_ACTUAL_VERSION})"
+  exit 1
+fi
+
 export OPTIMIZE="-Os"
 export LDFLAGS=${OPTIMIZE}
 export CFLAGS=${OPTIMIZE}
