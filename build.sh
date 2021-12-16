@@ -48,6 +48,6 @@ cd $ROOT_DIR
 mkdir -p dist
 
 mv $BUILD_DIR/rnnoise/rnnoise.wasm dist/
-mv $BUILD_DIR/rnnoise/rnnoise.js src/rnnoise-wasm.js
+mv $BUILD_DIR/rnnoise/rnnoise.js src/rnnoise_wasm.js
 
 rm -rf $BUILD_DIR
