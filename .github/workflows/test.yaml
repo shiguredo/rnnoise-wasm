@@ -19,6 +19,12 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           cache: npm
+      - uses: mymindstorm/setup-emsdk@v11
+        with:
+          version: 3.0.0
+      - run: emcc --version
+      - run: sudo apt install -y autoconf automake
+      - run: ./build.sh
       - run: npm --version
       - run: npm install
       - run: npm run build
