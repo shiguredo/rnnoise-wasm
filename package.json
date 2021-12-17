@@ -2,8 +2,10 @@
   "name": "@shiguredo/rnnoise-wasm",
   "version": "0.0.0",
   "description": "TODO",
+  "main": "dist/rnnoise.js",
+  "module": "dist/rnnoise.js",
   "scripts": {
-    "build": "rollup -c ./rollup.config.js",
+    "build": "rollup -c ./rollup.config.js && tsc --emitDeclarationOnly",
     "lint": "eslint --ext .ts ./src",
     "fmt": "prettier --write src",
     "start": "npx serve -S -l 8080 ."
