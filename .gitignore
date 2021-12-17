@@ -39,3 +39,6 @@ dist
 
 # ignore yarn.lock
 yarn.lock
+
+# Ignore generated files by build.sh
+src/rnnoise_wasm.js
