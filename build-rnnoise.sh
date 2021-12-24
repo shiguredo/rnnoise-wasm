@@ -4,7 +4,7 @@ set -eux
 # 各種設定
 EMSCRIPTEN_VERSION=3.0.0
 RNNOISE_REPOSITORY=https://github.com/shiguredo/rnnoise
-RNNOISE_VERSION=feature/support-wasm-simd #master
+RNNOISE_VERSION=feature/support-wasm-simd  # TODO: タグ指定にする
 OPTIMIZE="-O2"
 
 # Emscriptenのバージョンチェック
@@ -19,40 +19,58 @@ if [ "$EMSCRIPTEN_ACTUAL_VERSION" != "$EMSCRIPTEN_VERSION" ]; then
   exit 1
 fi
 
+# 作業用の一時ディレクトリを作成
 unset BUILD_DIR
 trap '[[ "$BUILD_DIR" ]] && rm -f $BUILD_DIR' 1 2 3 15
-
 BUILD_DIR=$(mktemp -d)
+mkdir -p $BUILD_DIR
 
+# カレントディレクトリを覚えておく
+# ※rnnoise-wasmリポジトリのルートディレクトリで実行されていることを仮定している
 ROOT_DIR=$PWD
 
-mkdir -p $BUILD_DIR
-cd $BUILD_DIR
+# ビルド関数
+function build_rnnoise() {
+  export CFLAGS="$1"
+  CONFIGURE_FLAGS="$2"
+  NAME="$3"
 
-git clone $RNNOISE_REPOSITORY rnnoise
-cd rnnoise/
-git checkout $RNNOISE_VERSION
+  mkdir $BUILD_DIR/$NAME
+  cd $BUILD_DIR/$NAME
 
-export CFLAGS="${OPTIMIZE} -msimd128"
+  git clone $RNNOISE_REPOSITORY rnnoise
+  cd rnnoise/
+  git checkout $RNNOISE_VERSION
 
-./autogen.sh
-emconfigure ./configure --enable-wasm-simd --enable-shared=no
-emmake make
+  ./autogen.sh
+  emconfigure ./configure --enable-shared=no $CONFIGURE_FLAGS
+  emmake make
 
-emcc \
-  -s STRICT=1 \
-  -s ALLOW_MEMORY_GROWTH=1 \
-  -s MALLOC=emmalloc \
-  -s MODULARIZE=1 \
-  -s EXPORT_ES6=1 \
-  -s EXPORTED_FUNCTIONS="['_rnnoise_process_frame', '_rnnoise_destroy', '_rnnoise_create', '_rnnoise_get_frame_size', '_malloc', '_free']" \
-  .libs/librnnoise.a \
-  -o rnnoise.js
+  emcc \
+    -s STRICT=1 \
+    -s ALLOW_MEMORY_GROWTH=1 \
+    -s MALLOC=emmalloc \
+    -s MODULARIZE=1 \
+    -s EXPORT_ES6=1 \
+    -s EXPORTED_FUNCTIONS="['_rnnoise_process_frame', '_rnnoise_destroy', '_rnnoise_create', '_rnnoise_get_frame_size', '_malloc', '_free']" \
+    .libs/librnnoise.a \
+    -o $NAME.js
 
-cd $ROOT_DIR
+  cd $ROOT_DIR
+}
+
+# 通常版をビルド
+build_rnnoise "${OPTIMIZE}" "" "rnnoise"
+
+# SIMD版をビルド
+build_rnnoise "${OPTIMIZE} -msimd128" "--enable-wasm-simd" "rnnoise_simd"
+
+# ビルド結果をコピー
 mkdir -p dist
+mv $BUILD_DIR/rnnoise/rnnoise/rnnoise.wasm dist/
+mv $BUILD_DIR/rnnoise/rnnoise/rnnoise.js src/rnnoise_wasm.js
+mv $BUILD_DIR/rnnoise_simd/rnnoise/rnnoise_simd.wasm dist/
+mv $BUILD_DIR/rnnoise_simd/rnnoise/rnnoise_simd.js src/rnnoise_wasm_simd.js
 
-mv $BUILD_DIR/rnnoise/rnnoise.wasm dist/
-mv $BUILD_DIR/rnnoise/rnnoise.js src/rnnoise_wasm.js
-
+# 一時ディレクトリを削除
 rm -rf $BUILD_DIR
