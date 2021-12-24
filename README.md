@@ -1,7 +1,7 @@
 rnnoise-wasm
 ============
 
-[RNNoise](https://github.com/xiph/rnnoise)をwasmにビルドして、TypeScriptから利用するためのライブラリです。
+[RNNoise](https://github.com/shiguredo/rnnoise)をwasmにビルドして、TypeScriptから利用するためのライブラリです。
 
 WebAssemblyのSIMDに対応しているブラウザでは、自動的にSIMD版のwasmビルドが使用されます。
 
