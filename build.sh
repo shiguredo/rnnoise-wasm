@@ -1,8 +1,13 @@
 #! /bin/bash
 set -eux
 
+# 各種設定
 EMSCRIPTEN_VERSION=3.0.0
+RNNOISE_REPOSITORY=https://github.com/shiguredo/rnnoise
+RNNOISE_VERSION=feature/support-wasm-simd #master
+OPTIMIZE="-O2"
 
+# Emscriptenのバージョンチェック
 if ! which emcc >/dev/null; then
   echo "Please install emscripten-${EMSCRIPTEN_VERSION}"
   exit 1
@@ -12,17 +17,6 @@ EMSCRIPTEN_ACTUAL_VERSION=$(emcc --version | head -1 | grep -o -E '[0-9]+[.][0-9
 if [ "$EMSCRIPTEN_ACTUAL_VERSION" != "$EMSCRIPTEN_VERSION" ]; then
   echo "Please install emscripten-${EMSCRIPTEN_VERSION} (found version ${EMSCRIPTEN_ACTUAL_VERSION})"
   exit 1
-fi
-
-export OPTIMIZE="-Os"
-export LDFLAGS=${OPTIMIZE}
-export CFLAGS=${OPTIMIZE}
-export CXXFLAGS=${OPTIMIZE}
-
-if [[ `uname` == "Darwin"  ]]; then
-  SO_SUFFIX="dylib"
-else
-  SO_SUFFIX="so"
 fi
 
 unset BUILD_DIR
@@ -35,26 +29,24 @@ ROOT_DIR=$PWD
 mkdir -p $BUILD_DIR
 cd $BUILD_DIR
 
-git clone https://github.com/shiguredo/rnnoise.git
+git clone $RNNOISE_REPOSITORY rnnoise
 cd rnnoise/
+git checkout $RNNOISE_VERSION
+
+export CFLAGS="${OPTIMIZE} -msimd128"
 
 ./autogen.sh
-
-emconfigure ./configure CFLAGS=${OPTIMIZE} --enable-static=no --disable-examples --disable-doc
-emmake make clean
-emmake make V=1
+emconfigure ./configure --enable-wasm-simd --enable-shared=no
+emmake make
 
 emcc \
-  ${OPTIMIZE} \
   -s STRICT=1 \
   -s ALLOW_MEMORY_GROWTH=1 \
   -s MALLOC=emmalloc \
   -s MODULARIZE=1 \
-  -s ENVIRONMENT="web,worker" \
   -s EXPORT_ES6=1 \
-  -s USE_ES6_IMPORT_META=0 \
   -s EXPORTED_FUNCTIONS="['_rnnoise_process_frame', '_rnnoise_destroy', '_rnnoise_create', '_rnnoise_get_frame_size', '_malloc', '_free']" \
-  .libs/librnnoise.${SO_SUFFIX} \
+  .libs/librnnoise.a \
   -o rnnoise.js
 
 cd $ROOT_DIR
