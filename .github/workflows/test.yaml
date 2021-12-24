@@ -24,7 +24,7 @@ jobs:
           version: 3.0.0
       - run: emcc --version
       - run: sudo apt install -y autoconf automake
-      - run: ./build.sh
+      - run: ./build-rnnoise.sh
       - run: npm --version
       - run: npm install
       - run: npm run build
