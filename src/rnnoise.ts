@@ -1,3 +1,15 @@
+import { simd } from "wasm-feature-detect";
+
+simd().then((simdSupported) => {
+  if (simdSupported) {
+    console.log("SIMD supported");
+    //  SIMD がサポートされている
+  } else {
+    // サポートされていない
+    console.log("SIMD not supported");
+  }
+});
+
 import loadRnnoiseModule from "./rnnoise_wasm.js";
 import { RnnoiseModule, DenoiseState, F32Ptr } from "./rnnoise_wasm.js";
 
@@ -18,7 +30,6 @@ class Rnnoise {
     if (!pcmInputBuf || !pcmOutputBuf) {
       // `rnnoiseModule`がGCされればwasm用に割り当てた領域もまとめて解放されるので、
       // 個別の領域解放処理は省いている。
-      // TODO: 本当にそういう挙動なのかを確認
       throw Error("Failed to allocate PCM buffers.");
     }
     this.pcmInputBuf = pcmInputBuf;
