@@ -1,17 +1,10 @@
 import { simd } from "wasm-feature-detect";
-
-simd().then((simdSupported) => {
-  if (simdSupported) {
-    console.log("SIMD supported");
-    //  SIMD がサポートされている
-  } else {
-    // サポートされていない
-    console.log("SIMD not supported");
-  }
-});
-
 import loadRnnoiseModule from "./rnnoise_wasm.js";
 import { RnnoiseModule, DenoiseState, F32Ptr } from "./rnnoise_wasm.js";
+
+class RnnoiseOptions {
+  assetsPath?: string;
+}
 
 class Rnnoise {
   private rnnoiseModule: RnnoiseModule;
@@ -36,11 +29,24 @@ class Rnnoise {
     this.pcmOutputBuf = pcmOutputBuf;
   }
 
-  static async load(wasmFilePath?: string): Promise<Rnnoise> {
-    const rnnoiseModule = await loadRnnoiseModule({
-      locateFile: (path, prefix) => {
-        return wasmFilePath || prefix + path;
-      },
+  static async load(options: RnnoiseOptions = {}): Promise<Rnnoise> {
+    const rnnoiseModule = await simd().then((isSupported) => {
+      return loadRnnoiseModule({
+        locateFile: (path, prefix) => {
+          if (options.assetsPath !== undefined) {
+            prefix = options.assetsPath + "/";
+          }
+
+          if (isSupported) {
+            path = "rnnoise_simd.wasm";
+            console.debug("Loads rnnoise-wasm (SIMD ver): ", prefix + path);
+          } else {
+            console.debug("Loads rnnoise-wasm (non SIMD ver): ", prefix + path);
+          }
+
+          return prefix + path;
+        },
+      });
     });
 
     return Promise.resolve(new Rnnoise(rnnoiseModule));
@@ -67,4 +73,4 @@ class Rnnoise {
   }
 }
 
-export { Rnnoise };
+export { Rnnoise, RnnoiseOptions };
