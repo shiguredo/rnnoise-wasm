@@ -8,7 +8,7 @@
     "build": "rollup -c ./rollup.config.js && tsc --emitDeclarationOnly",
     "lint": "eslint --ext .ts ./src",
     "fmt": "prettier --write src",
-    "test": "jest"
+    "test": "node --experimental-wasm-simd node_modules/.bin/jest"
   },
   "repository": {
     "type": "git",
