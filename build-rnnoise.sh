@@ -65,12 +65,11 @@ build_rnnoise "${OPTIMIZE}" "" "rnnoise"
 # SIMD版をビルド
 build_rnnoise "${OPTIMIZE} -msimd128" "--enable-wasm-simd" "rnnoise_simd"
 
-# ビルド結果をコピー
+# ビルド結果をコピー (JavaScriptファイルはSIMD対応・非対応のどちらでも同じなので使い回す）
 mkdir -p dist
 mv $BUILD_DIR/rnnoise/rnnoise/rnnoise.wasm dist/
 mv $BUILD_DIR/rnnoise/rnnoise/rnnoise.js src/rnnoise_wasm.js
 mv $BUILD_DIR/rnnoise_simd/rnnoise/rnnoise_simd.wasm dist/
-mv $BUILD_DIR/rnnoise_simd/rnnoise/rnnoise_simd.js src/rnnoise_wasm_simd.js
 
 # 一時ディレクトリを削除
 rm -rf $BUILD_DIR
