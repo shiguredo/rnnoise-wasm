@@ -4,6 +4,7 @@
   "disableSources": true,
   "excludePrivate": true,
   "excludeProtected": true,
+  "excludeInternal": true,
   "readme": "./TYPEDOC.md",
   "out": "apidoc"
 }
