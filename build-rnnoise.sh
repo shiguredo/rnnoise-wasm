@@ -4,7 +4,7 @@ set -eux
 # 各種設定
 EMSCRIPTEN_VERSION=3.0.0
 RNNOISE_REPOSITORY=https://github.com/shiguredo/rnnoise
-RNNOISE_VERSION=feature/support-wasm-simd  # TODO: タグ指定にする
+RNNOISE_VERSION=2021.1.0
 OPTIMIZE="-O2"
 
 # Emscriptenのバージョンチェック
