@@ -39,4 +39,4 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
-生成されたwasmファイルのライセンスについては[rnnoise/COPYING](https://github.com/xiph/rnnoise/blob/master/COPYING)を参照してください。
+生成された wasm ファイルのライセンスについては [rnnoise/COPYING](https://github.com/shiguredo/rnnoise) を参照してください。
