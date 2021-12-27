@@ -15,8 +15,8 @@ class Rnnoise {
   private denoiseState: DenoiseState;
   private pcmInputBuf: F32Ptr;
   private pcmOutputBuf: F32Ptr;
-  private frameSize: number;
 
+  readonly frameSize: number;
   private constructor(rnnoiseModule: RnnoiseModule) {
     this.rnnoiseModule = rnnoiseModule;
     this.denoiseState = rnnoiseModule._rnnoise_create();
@@ -61,8 +61,8 @@ class Rnnoise {
 
   // 16-bit PCM
   processFrame(frame: Float32Array): number {
-    if (frame.length != this.getFrameSize()) {
-      throw Error(`Expected frame size ${this.getFrameSize()}, but got ${frame.length}`);
+    if (frame.length != this.frameSize) {
+      throw Error(`Expected frame size ${this.frameSize}, but got ${frame.length}`);
     }
 
     const pcmInputIndex = this.pcmInputBuf / 4;
@@ -73,10 +73,6 @@ class Rnnoise {
     frame.set(this.rnnoiseModule.HEAPF32.subarray(pcmOutputIndex, pcmOutputIndex + this.frameSize));
 
     return vad;
-  }
-
-  getFrameSize(): number {
-    return this.frameSize;
   }
 }
 
