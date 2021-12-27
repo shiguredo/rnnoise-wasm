@@ -4,6 +4,9 @@ import { RnnoiseModule, DenoiseState, F32Ptr } from "./rnnoise_wasm.js";
 
 class RnnoiseOptions {
   assetsPath?: string;
+
+  // 開発者向け
+  wasmFileName?: string;
 }
 
 class Rnnoise {
@@ -37,7 +40,10 @@ class Rnnoise {
             prefix = options.assetsPath + "/";
           }
 
-          if (isSupported) {
+          if (options.wasmFileName !== undefined) {
+            path = options.wasmFileName;
+            console.debug("Loads rnnoise-wasm: ", prefix + path);
+          } else if (isSupported) {
             path = "rnnoise_simd.wasm";
             console.debug("Loads rnnoise-wasm (SIMD ver): ", prefix + path);
           } else {
