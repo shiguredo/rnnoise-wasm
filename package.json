@@ -1,9 +1,10 @@
 {
   "name": "@shiguredo/rnnoise-wasm",
-  "version": "0.0.0",
-  "description": "TODO",
+  "version": "2021.1.0",
+  "description": "Noise suppression library using RNNoise WebAssembly build",
   "main": "dist/rnnoise.js",
   "module": "dist/rnnoise.js",
+  "types": "dist/rnnoise.d.ts",
   "scripts": {
     "build": "rollup -c ./rollup.config.js && tsc --emitDeclarationOnly",
     "lint": "eslint --ext .ts ./src",
@@ -25,6 +26,9 @@
     "url": "https://github.com/shiguredo/rnnoise-wasm/issues"
   },
   "homepage": "https://github.com/shiguredo/rnnoise-wasm#readme",
+  "files": [
+    "dist"
+  ],
   "devDependencies": {
     "@rollup/plugin-commonjs": "^21.0.1",
     "@rollup/plugin-node-resolve": "^13.1.1",
