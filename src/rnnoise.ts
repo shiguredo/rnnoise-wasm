@@ -3,6 +3,7 @@ import loadRnnoiseModule from "./rnnoise_wasm.js";
 import { RnnoiseModule, DenoiseState, F32Ptr } from "./rnnoise_wasm.js";
 
 class RnnoiseOptions {
+interface RnnoiseOptions {
   assetsPath?: string;
 
   // 開発者向け
