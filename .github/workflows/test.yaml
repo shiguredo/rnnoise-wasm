@@ -22,8 +22,8 @@ jobs:
       - run: sudo apt install -y autoconf automake
       - run: ./build-rnnoise.sh
 
-      # [注意] emsdkが古いnode/npmをインストールしてしまうので、
-      #        setup-nodeはその値に呼び出す必要がある。
+      # [注意] setup-emsdkが古いnode/npmをインストールしてしまうので、
+      #        setup-nodeはその後に呼び出す必要がある。
       - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node }}
