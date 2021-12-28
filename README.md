@@ -21,8 +21,8 @@ Please read https://github.com/shiguredo/oss/blob/master/README.en.md before use
 以下のコマンドでパッケージがインストールできます:
 ```console
 $ npm install --save @shiguredo/rnnoise-wasm
-$ ls node_modules/@shiguredo/rnnoise-wasm/
-rnnoise.d.ts rnnoise.js rnnoise.wasm rnnoise_simd.wasm
+$ npm ls
+└── @shiguredo/rnnoise-wasm@2021.1.0
 ```
 
 TypeScript での使用方法は次のようになります:
