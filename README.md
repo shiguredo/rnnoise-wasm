@@ -27,14 +27,14 @@ $ npm ls
 
 TypeScript での使用方法は次のようになります:
 ```typescript
-import { Rnnoise } from "@shigredo/rnnoise-wasm/"
+import { Rnnoise } from "@shigredo/rnnoise-wasm/";
 
 // RNNoise の wasm ファイルをロード
-Rnnoise.load().then(|rnnoise| {
+Rnnoise.load().then((rnnoise) => {
     // 音声フレームにノイズ抑制処理を適用する
     const frame = new Float32Array(...);
     rnnoise.processFrame(frame);
-})
+});
 ```
 
 ## ライセンス
