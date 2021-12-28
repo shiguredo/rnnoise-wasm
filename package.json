@@ -10,7 +10,7 @@
     "build": "rollup -c ./rollup.config.js && tsc --emitDeclarationOnly",
     "lint": "eslint --ext .ts ./src",
     "fmt": "prettier --write src",
-    "test": "jest",
+    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest",
     "doc": "typedoc"
   },
   "repository": {
