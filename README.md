@@ -27,7 +27,7 @@ $ npm ls
 
 TypeScript での使用方法は次のようになります:
 ```typescript
-import { Rnnoise } from "@shigredo/rnnoise-wasm/";
+import { Rnnoise } from "@shiguredo/rnnoise-wasm";
 
 // RNNoise の wasm ファイルをロード
 Rnnoise.load().then((rnnoise) => {
