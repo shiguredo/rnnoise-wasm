@@ -2,9 +2,10 @@
   "name": "@shiguredo/rnnoise-wasm",
   "version": "2021.1.0",
   "description": "SIMD-accelerated WebAssembly build of RNNoise",
-  "main": "dist/rnnoise.js",
-  "module": "dist/rnnoise.js",
+  "main": "dist/rnnoise.mjs",
+  "module": "dist/rnnoise.mjs",
   "types": "dist/rnnoise.d.ts",
+  "type": "module",
   "scripts": {
     "build": "rollup -c ./rollup.config.js && tsc --emitDeclarationOnly",
     "lint": "eslint --ext .ts ./src",
