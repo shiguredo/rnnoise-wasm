@@ -1,11 +1,10 @@
 rnnoise-wasm
 ============
 
-[RNNoise](https://github.com/shiguredo/rnnoise)をwasmにビルドして、TypeScriptから利用するためのライブラリです。
+[RNNoise](https://github.com/shiguredo/rnnoise) を WebAssembly (wasm) にビルドして
+JavaScript や TypeScript から利用するためのライブラリです。
 
-WebAssemblyのSIMDに対応しているブラウザでは、自動的にSIMD版のwasmビルドが使用されます。
-
-**絶賛開発中**
+WebAssembly の SIMD に対応しているブラウザでは、自動的に SIMD版 の wasm ビルドが使用されます。
 
 ## About Shiguredo's open source software
 
@@ -17,6 +16,26 @@ Please read https://github.com/shiguredo/oss/blob/master/README.en.md before use
 
 利用前に https://github.com/shiguredo/oss をお読みください。
 
+## 使い方
+
+以下のコマンドでパッケージがインストールできます:
+```console
+$ npm install --save @shiguredo/rnnoise-wasm
+$ ls node_modules/@shiguredo/rnnoise-wasm/
+rnnoise.d.ts rnnoise.js rnnoise.wasm rnnoise_simd.wasm
+```
+
+TypeScript での使用方法は次のようになります:
+```typescript
+import { Rnnoise } from "@shigredo/rnnoise-wasm/"
+
+// RNNoise の wasm ファイルをロード
+Rnnoise.load().then(|rnnoise| {
+    // 音声フレームにノイズ抑制処理を適用する
+    const frame = new Float32Array(...);
+    rnnoise.processFrame(frame);
+})
+```
 
 ## ライセンス
 
