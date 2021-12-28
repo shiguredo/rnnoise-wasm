@@ -22,8 +22,8 @@ export default [
     ],
     output: {
       sourcemap: false,
-      file: './dist/rnnoise.js',
-      format: 'umd',
+      file: './dist/rnnoise.mjs',
+      format: 'module',
       name: 'Shiguredo',
       extend: true,
       banner: banner,

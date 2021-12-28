@@ -1,3 +1,11 @@
+// emscripten-v3.1.0が出力したファイルをバンドルした".mjs"ファイルを、nodeから読み込もうとするとエラーになるので、
+// https://github.com/emscripten-core/emscripten/issues/11792#issuecomment-877120580 に記載のワークアラウンドで対処している。
+//
+// TODO: emscripten側に正式な対応が入ったら、そちらを使用してこのワークアラウンドは消す
+import { createRequire } from "module";
+globalThis.__dirname = "dist/";
+globalThis.require = createRequire(import.meta.url);
+
 import { Rnnoise } from "../dist/rnnoise";
 
 test("Create instance and process a frame (non SIMD)", async () => {
