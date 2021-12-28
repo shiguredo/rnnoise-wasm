@@ -1,9 +1,10 @@
 {
   "name": "@shiguredo/rnnoise-wasm",
-  "version": "0.0.0",
-  "description": "TODO",
+  "version": "2021.1.0",
+  "description": "SIMD-accelerated WebAssembly build of RNNoise",
   "main": "dist/rnnoise.js",
   "module": "dist/rnnoise.js",
+  "types": "dist/rnnoise.d.ts",
   "scripts": {
     "build": "rollup -c ./rollup.config.js && tsc --emitDeclarationOnly",
     "lint": "eslint --ext .ts ./src",
@@ -22,9 +23,12 @@
   "author": "Shiguredo Inc.",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/shiguredo/rnnoise-wasm/issues"
+    "url": "https://discord.gg/shiguredo"
   },
   "homepage": "https://github.com/shiguredo/rnnoise-wasm#readme",
+  "files": [
+    "dist"
+  ],
   "devDependencies": {
     "@rollup/plugin-commonjs": "^21.0.1",
     "@rollup/plugin-node-resolve": "^13.1.1",
@@ -43,9 +47,7 @@
     "ts-jest": "^27.1.2",
     "ts-node": "^10.4.0",
     "typedoc": "^0.22.10",
-    "typescript": "^4.5.4"
-  },
-  "dependencies": {
+    "typescript": "^4.5.4",
     "wasm-feature-detect": "^1.2.11"
   }
 }
