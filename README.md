@@ -1,6 +1,10 @@
 rnnoise-wasm
 ============
 
+[![GitHub tag](https://img.shields.io/github/tag/shiguredo/rnnoise-wasm.svg)](https://github.com/shiguredo/rnnoise-wasm)
+[![npm version](https://badge.fury.io/js/@shiguredo%2Frnnoise-wasm.svg)](https://badge.fury.io/js/@shiguredo%2Frnnoise-wasm)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
 [RNNoise](https://github.com/shiguredo/rnnoise) を WebAssembly (wasm) にビルドして
 JavaScript や TypeScript から利用するためのライブラリです。
 
