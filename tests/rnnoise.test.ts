@@ -10,16 +10,21 @@ import { Rnnoise } from "../dist/rnnoise";
 
 test("Create instance and process a frame (non SIMD)", async () => {
   const rnnoise = await Rnnoise.load({ wasmFileName: "rnnoise.wasm" });
+  const denoiseState = rnnoise.createDenoiseState();
   const buffer = new Float32Array(TEST_FRAME);
-  const vad = rnnoise.processFrame(buffer);
+  const vad = denoiseState.processFrame(buffer);
+  denoiseState.destroy();
+
   expect(vad).toBeCloseTo(0.43759429454803467);
   buffer.forEach((x, i) => expect(x).toBeCloseTo(TEST_FRAME_PROCESSED[i]));
 });
 
 test("Create instance and process a frame (SIMD)", async () => {
   const rnnoise = await Rnnoise.load({ wasmFileName: "rnnoise_simd.wasm" });
+  const denoiseState = rnnoise.createDenoiseState();
   const buffer = new Float32Array(TEST_FRAME);
-  const vad = rnnoise.processFrame(buffer);
+  const vad = denoiseState.processFrame(buffer);
+  denoiseState.destroy();
 
   expect(vad).toBeCloseTo(0.43759429454803467);
   buffer.forEach((x, i) => expect(x).toBeCloseTo(TEST_FRAME_PROCESSED[i]));
