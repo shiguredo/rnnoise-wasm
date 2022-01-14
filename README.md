@@ -35,9 +35,17 @@ import { Rnnoise } from "@shiguredo/rnnoise-wasm";
 
 // RNNoise の wasm ファイルをロード
 Rnnoise.load().then((rnnoise) => {
+    // ノイズ抑制用インスタンスを生成
+    const denoiseState = rnnoise.createDenoiseState();
+
     // 音声フレームにノイズ抑制処理を適用する
     const frame = new Float32Array(...);
     rnnoise.processFrame(frame);
+
+    ...
+
+    // インスタンスを破棄して wasm 用に割り当てたメモリを解放
+    denoiseState.destroy();
 });
 ```
 
