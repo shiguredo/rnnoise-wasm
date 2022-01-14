@@ -84,7 +84,7 @@ class Rnnoise {
   }
 }
 
-const F32_BYTE_SIZE: number = 4;
+const F32_BYTE_SIZE = 4;
 
 /**
  * ノイズ抑制に必要な状態を保持するクラス
