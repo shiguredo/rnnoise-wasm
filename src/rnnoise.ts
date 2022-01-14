@@ -84,6 +84,8 @@ class Rnnoise {
   }
 }
 
+const F32_BYTE_SIZE: number = 4;
+
 /**
  * ノイズ抑制に必要な状態を保持するクラス
  *
@@ -107,8 +109,8 @@ class DenoiseState {
 
     this.frameSize = this.rnnoiseModule._rnnoise_get_frame_size();
     const state = this.rnnoiseModule._rnnoise_create();
-    const pcmInputBuf = this.rnnoiseModule._malloc(this.frameSize * 4);
-    const pcmOutputBuf = this.rnnoiseModule._malloc(this.frameSize * 4);
+    const pcmInputBuf = this.rnnoiseModule._malloc(this.frameSize * F32_BYTE_SIZE);
+    const pcmOutputBuf = this.rnnoiseModule._malloc(this.frameSize * F32_BYTE_SIZE);
     if (!state || !pcmInputBuf || !pcmOutputBuf) {
       this.destroy();
       throw Error("Failed to allocate DenoiseState or PCM buffers.");
@@ -146,8 +148,8 @@ class DenoiseState {
       throw Error(`Expected frame size ${this.frameSize}, but got ${frame.length}`);
     }
 
-    const pcmInputIndex = this.pcmInputBuf / 4;
-    const pcmOutputIndex = this.pcmOutputBuf / 4;
+    const pcmInputIndex = this.pcmInputBuf / F32_BYTE_SIZE;
+    const pcmOutputIndex = this.pcmOutputBuf / F32_BYTE_SIZE;
 
     this.rnnoiseModule.HEAPF32.set(frame, pcmInputIndex);
     const vad = this.rnnoiseModule._rnnoise_process_frame(this.state, this.pcmOutputBuf, this.pcmInputBuf);
