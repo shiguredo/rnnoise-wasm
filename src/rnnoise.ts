@@ -1,6 +1,6 @@
 import { simd } from "wasm-feature-detect";
 import loadRnnoiseModule from "./rnnoise_wasm.js";
-import { RnnoiseModule, DenoiseState, F32Ptr } from "./rnnoise_wasm.js";
+import * as rnnoise_wasm from "./rnnoise_wasm.js";
 
 /**
  * {@link Rnnoise.load} 関数に指定可能なオプション
@@ -22,35 +22,21 @@ interface RnnoiseOptions {
 }
 
 /**
- * WebAssembly 用にビルドした [RNNoise](https://github.com/shiguredo/rnnoise) を用いて音声データのノイズ抑制を行うためのクラス
+ * WebAssembly 用にビルドした [RNNoise](https://github.com/shiguredo/rnnoise) の API を提供するためのクラス
  *
  * インスタンスを作成するためには {@link Rnnoise.load} 関数を使用してください
  */
 class Rnnoise {
-  private rnnoiseModule: RnnoiseModule;
-  private denoiseState: DenoiseState;
-  private pcmInputBuf: F32Ptr;
-  private pcmOutputBuf: F32Ptr;
+  private rnnoiseModule: rnnoise_wasm.RnnoiseModule;
 
   /**
-   * 一度の {@link Rnnoise.processFrame} メソッド呼び出しで処理可能なサンプル数
+   * 一度の {@link DenoiseState.processFrame} メソッド呼び出しで処理可能なサンプル数
    */
   readonly frameSize: number;
 
-  private constructor(rnnoiseModule: RnnoiseModule) {
+  private constructor(rnnoiseModule: rnnoise_wasm.RnnoiseModule) {
     this.rnnoiseModule = rnnoiseModule;
-    this.denoiseState = rnnoiseModule._rnnoise_create();
     this.frameSize = rnnoiseModule._rnnoise_get_frame_size();
-
-    const pcmInputBuf = rnnoiseModule._malloc(this.frameSize * 4);
-    const pcmOutputBuf = rnnoiseModule._malloc(this.frameSize * 4);
-    if (!pcmInputBuf || !pcmOutputBuf) {
-      // `rnnoiseModule`がGCされればwasm用に割り当てた領域もまとめて解放されるので、
-      // 個別の領域解放処理は省いている。
-      throw Error("Failed to allocate PCM buffers.");
-    }
-    this.pcmInputBuf = pcmInputBuf;
-    this.pcmOutputBuf = pcmOutputBuf;
   }
 
   /**
@@ -89,6 +75,53 @@ class Rnnoise {
   }
 
   /**
+   * ノイズ抑制を行うための {@link DenoiseState} インスタンスを生成します
+   *
+   * @returns 生成されたインスタンス
+   */
+  createDenoiseState(): DenoiseState {
+    return new DenoiseState(this.rnnoiseModule);
+  }
+}
+
+const F32_BYTE_SIZE = 4;
+
+/**
+ * ノイズ抑制に必要な状態を保持するクラス
+ *
+ * インスタンスを作成するためには {@link Rnnoise.createDenoiseState} メソッドを使用してください
+ *
+ * なお、メモリリークを防ぐために、インスタンスが不要となったら {@link DenoiseState.destroy} メソッドを
+ * 呼び出す必要があることに注意してください
+ */
+class DenoiseState {
+  private rnnoiseModule?: rnnoise_wasm.RnnoiseModule;
+  private state: rnnoise_wasm.DenoiseState;
+  private pcmInputBuf: rnnoise_wasm.F32Ptr;
+  private pcmOutputBuf: rnnoise_wasm.F32Ptr;
+  private frameSize: number;
+
+  /**
+   * @internal
+   */
+  constructor(rnnoiseModule: rnnoise_wasm.RnnoiseModule) {
+    this.rnnoiseModule = rnnoiseModule;
+
+    this.frameSize = this.rnnoiseModule._rnnoise_get_frame_size();
+    const state = this.rnnoiseModule._rnnoise_create();
+    const pcmInputBuf = this.rnnoiseModule._malloc(this.frameSize * F32_BYTE_SIZE);
+    const pcmOutputBuf = this.rnnoiseModule._malloc(this.frameSize * F32_BYTE_SIZE);
+    if (!state || !pcmInputBuf || !pcmOutputBuf) {
+      this.destroy();
+      throw Error("Failed to allocate DenoiseState or PCM buffers.");
+    }
+
+    this.state = state;
+    this.pcmInputBuf = pcmInputBuf;
+    this.pcmOutputBuf = pcmOutputBuf;
+  }
+
+  /**
    * 音声フレームにノイズ抑制処理を適用するメソッド
    *
    * @param frame ノイズ抑制処理の対象となる音声フレーム
@@ -107,19 +140,37 @@ class Rnnoise {
    * 呼び出し側で事前に変換を行っておく必要があります
    */
   processFrame(frame: Float32Array): number {
+    if (this.rnnoiseModule === undefined) {
+      throw Error("This denoise state has already been destroyed.");
+    }
+
     if (frame.length != this.frameSize) {
       throw Error(`Expected frame size ${this.frameSize}, but got ${frame.length}`);
     }
 
-    const pcmInputIndex = this.pcmInputBuf / 4;
-    const pcmOutputIndex = this.pcmOutputBuf / 4;
+    const pcmInputIndex = this.pcmInputBuf / F32_BYTE_SIZE;
+    const pcmOutputIndex = this.pcmOutputBuf / F32_BYTE_SIZE;
 
     this.rnnoiseModule.HEAPF32.set(frame, pcmInputIndex);
-    const vad = this.rnnoiseModule._rnnoise_process_frame(this.denoiseState, this.pcmOutputBuf, this.pcmInputBuf);
+    const vad = this.rnnoiseModule._rnnoise_process_frame(this.state, this.pcmOutputBuf, this.pcmInputBuf);
     frame.set(this.rnnoiseModule.HEAPF32.subarray(pcmOutputIndex, pcmOutputIndex + this.frameSize));
 
     return vad;
   }
+
+  /**
+   * インスタンスが割り当てた wasm 内の領域を解放します
+   *
+   * 本メソッド呼び出し後に {@link DenoiseState.processFrame} メソッドを呼ぶとエラーとなります
+   */
+  destroy() {
+    if (this.rnnoiseModule !== undefined) {
+      this.rnnoiseModule._rnnoise_destroy(this.state);
+      this.rnnoiseModule._free(this.pcmInputBuf);
+      this.rnnoiseModule._free(this.pcmOutputBuf);
+      this.rnnoiseModule = undefined;
+    }
+  }
 }
 
-export { Rnnoise, RnnoiseOptions };
+export { Rnnoise, RnnoiseOptions, DenoiseState };
