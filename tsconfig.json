@@ -12,6 +12,7 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "newLine": "LF",
+    "stripInternal": true
   },
   "include": [
     "src"
