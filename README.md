@@ -1,6 +1,10 @@
 rnnoise-wasm
 ============
 
+[![GitHub tag](https://img.shields.io/github/tag/shiguredo/rnnoise-wasm.svg)](https://github.com/shiguredo/rnnoise-wasm)
+[![npm version](https://badge.fury.io/js/@shiguredo%2Frnnoise-wasm.svg)](https://badge.fury.io/js/@shiguredo%2Frnnoise-wasm)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
 [RNNoise](https://github.com/shiguredo/rnnoise) を WebAssembly (wasm) にビルドして
 JavaScript や TypeScript から利用するためのライブラリです。
 
@@ -22,18 +26,26 @@ Please read https://github.com/shiguredo/oss/blob/master/README.en.md before use
 ```console
 $ npm install --save @shiguredo/rnnoise-wasm
 $ npm ls
-└── @shiguredo/rnnoise-wasm@2021.1.0
+└── @shiguredo/rnnoise-wasm@2022.1.0
 ```
 
 TypeScript での使用方法は次のようになります:
 ```typescript
-import { Rnnoise } from "@shigredo/rnnoise-wasm/";
+import { Rnnoise } from "@shiguredo/rnnoise-wasm";
 
 // RNNoise の wasm ファイルをロード
 Rnnoise.load().then((rnnoise) => {
+    // ノイズ抑制用インスタンスを生成
+    const denoiseState = rnnoise.createDenoiseState();
+
     // 音声フレームにノイズ抑制処理を適用する
     const frame = new Float32Array(...);
     rnnoise.processFrame(frame);
+
+    ...
+
+    // インスタンスを破棄して wasm 用に割り当てたメモリを解放
+    denoiseState.destroy();
 });
 ```
 
