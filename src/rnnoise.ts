@@ -79,8 +79,47 @@ class Rnnoise {
    *
    * @returns 生成されたインスタンス
    */
-  createDenoiseState(): DenoiseState {
-    return new DenoiseState(this.rnnoiseModule);
+  createDenoiseState(model?: RNNModel): DenoiseState {
+    return new DenoiseState(this.rnnoiseModule, model);
+  }
+
+  // TODO: doc
+  createRNNModel(modelString: string): RNNModel {
+    return new RNNModel(this.rnnoiseModule, modelString);
+  }
+}
+
+// TODO: doc
+class RNNModel {
+  private rnnoiseModule?: rnnoise_wasm.RnnoiseModule;
+
+  /**
+   * @internal
+   **/
+  readonly model: rnnoise_wasm.RNNModel;
+
+  /**
+   * @internal
+   **/
+  constructor(rnnoiseModule: rnnoise_wasm.RnnoiseModule, modelString: string) {
+    this.rnnoiseModule = rnnoiseModule;
+
+    const modelCString = new TextEncoder().encode(modelString + "\x00");
+    let modelCStringPtr = rnnoiseModule._malloc(modelCString.length);
+    rnnoiseModule.HEAPU8.subarray(modelCStringPtr, modelCStringPtr + modelCString.length).set(modelCString);
+    this.model = rnnoiseModule._rnnoise_model_from_string(modelCStringPtr);
+    rnnoiseModule._free(modelCStringPtr);
+
+    if (!this.model) {
+      throw Error("Failed to create RNNModel from a given model string.");
+    }
+  }
+
+  free(): void {
+    if (this.rnnoiseModule !== undefined) {
+      this.rnnoiseModule._rnnoise_model_free(this.model);
+      this.rnnoiseModule = undefined;
+    }
   }
 }
 
@@ -101,14 +140,22 @@ class DenoiseState {
   private pcmOutputBuf: rnnoise_wasm.F32Ptr;
   private frameSize: number;
 
+  // TODO: doc
+  readonly model?: RNNModel;
+
   /**
    * @internal
    */
-  constructor(rnnoiseModule: rnnoise_wasm.RnnoiseModule) {
+  constructor(rnnoiseModule: rnnoise_wasm.RnnoiseModule, model?: RNNModel) {
     this.rnnoiseModule = rnnoiseModule;
 
     this.frameSize = this.rnnoiseModule._rnnoise_get_frame_size();
-    const state = this.rnnoiseModule._rnnoise_create();
+    let state;
+    if (model !== undefined) {
+      state = this.rnnoiseModule._rnnoise_create(model.model);
+    } else {
+      state = this.rnnoiseModule._rnnoise_create();
+    }
     const pcmInputBuf = this.rnnoiseModule._malloc(this.frameSize * F32_BYTE_SIZE);
     const pcmOutputBuf = this.rnnoiseModule._malloc(this.frameSize * F32_BYTE_SIZE);
     if (!state || !pcmInputBuf || !pcmOutputBuf) {
@@ -173,4 +220,4 @@ class DenoiseState {
   }
 }
 
-export { Rnnoise, RnnoiseOptions, DenoiseState };
+export { Rnnoise, RnnoiseOptions, DenoiseState, RNNModel };

@@ -4,7 +4,7 @@ set -eux
 # 各種設定
 EMSCRIPTEN_VERSION=3.1.0
 RNNOISE_REPOSITORY=https://github.com/shiguredo/rnnoise
-RNNOISE_VERSION=2021.1.0
+RNNOISE_VERSION=feature/rnn-model-from-string # TODO: 2022.1.0
 OPTIMIZE="-O2"
 
 # Emscriptenのバージョンチェック
@@ -52,7 +52,7 @@ function build_rnnoise() {
     -s MALLOC=emmalloc \
     -s MODULARIZE=1 \
     -s EXPORT_ES6=1 \
-    -s EXPORTED_FUNCTIONS="['_rnnoise_process_frame', '_rnnoise_destroy', '_rnnoise_create', '_rnnoise_get_frame_size', '_malloc', '_free']" \
+    -s EXPORTED_FUNCTIONS="['_rnnoise_process_frame', '_rnnoise_destroy', '_rnnoise_create', '_rnnoise_get_frame_size', '_rnnoise_model_from_string', '_rnnoise_model_free', '_malloc', '_free']" \
     .libs/librnnoise.a \
     -o $NAME.js
 
