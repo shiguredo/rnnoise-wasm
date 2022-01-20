@@ -77,10 +77,21 @@ class Rnnoise {
   /**
    * ノイズ抑制を行うための {@link DenoiseState} インスタンスを生成します
    *
+   * @param model 使用するノイズ抑制モデル（省略時はデフォルトモデル）
    * @returns 生成されたインスタンス
    */
-  createDenoiseState(): DenoiseState {
-    return new DenoiseState(this.rnnoiseModule);
+  createDenoiseState(model?: Model): DenoiseState {
+    return new DenoiseState(this.rnnoiseModule, model);
+  }
+
+  /**
+   * ノイズ抑制に使用する RNNoise のモデルを生成します
+   *
+   * @param モデル定義文字列
+   * @return 生成されたモデルインスタンス
+   */
+  createModel(modelString: string): Model {
+    return new Model(this.rnnoiseModule, modelString);
   }
 }
 
@@ -102,13 +113,26 @@ class DenoiseState {
   private frameSize: number;
 
   /**
+   * 使用しているノイズ抑制モデル
+   *
+   * `undefined` の場合はデフォルトモデルが使われていることを意味します
+   */
+  readonly model?: Model;
+
+  /**
    * @internal
    */
-  constructor(rnnoiseModule: rnnoise_wasm.RnnoiseModule) {
+  constructor(rnnoiseModule: rnnoise_wasm.RnnoiseModule, model?: Model) {
     this.rnnoiseModule = rnnoiseModule;
+    this.model = model;
 
     this.frameSize = this.rnnoiseModule._rnnoise_get_frame_size();
-    const state = this.rnnoiseModule._rnnoise_create();
+    let state;
+    if (model !== undefined) {
+      state = this.rnnoiseModule._rnnoise_create(model.model);
+    } else {
+      state = this.rnnoiseModule._rnnoise_create();
+    }
     const pcmInputBuf = this.rnnoiseModule._malloc(this.frameSize * F32_BYTE_SIZE);
     const pcmOutputBuf = this.rnnoiseModule._malloc(this.frameSize * F32_BYTE_SIZE);
     if (!state || !pcmInputBuf || !pcmOutputBuf) {
@@ -173,4 +197,49 @@ class DenoiseState {
   }
 }
 
-export { Rnnoise, RnnoiseOptions, DenoiseState };
+/**
+ * ノイズ抑制に使用する RNNoise のモデル
+ *
+ * インスタンスを作成するためには {@link Rnnoise.createModel} メソッドを使用してください
+ */
+class Model {
+  private rnnoiseModule?: rnnoise_wasm.RnnoiseModule;
+
+  /**
+   * @internal
+   **/
+  readonly model: rnnoise_wasm.RNNModel;
+
+  /**
+   * @internal
+   **/
+  constructor(rnnoiseModule: rnnoise_wasm.RnnoiseModule, modelString: string) {
+    this.rnnoiseModule = rnnoiseModule;
+
+    // モデル定義文字列を、ヌル終端文字列に変換してから `rnnoise_model_from_string` 関数を呼び出す
+    const modelCString = new TextEncoder().encode(modelString + "\x00");
+    const modelCStringPtr = rnnoiseModule._malloc(modelCString.length);
+    rnnoiseModule.HEAPU8.subarray(modelCStringPtr, modelCStringPtr + modelCString.length).set(modelCString);
+    this.model = rnnoiseModule._rnnoise_model_from_string(modelCStringPtr);
+    rnnoiseModule._free(modelCStringPtr);
+
+    if (!this.model) {
+      throw Error("Failed to create Model from a given model string.");
+    }
+  }
+
+  /**
+   * モデルに割り当てられた wasm 内の領域を解放します
+   *
+   * このモデルを参照している {@link DenoiseState} が存在する場合には、
+   * 先にそちらの {@link DenoiseState.destroy} メソッドを呼ぶように注意してください
+   */
+  free(): void {
+    if (this.rnnoiseModule !== undefined) {
+      this.rnnoiseModule._rnnoise_model_free(this.model);
+      this.rnnoiseModule = undefined;
+    }
+  }
+}
+
+export { Rnnoise, RnnoiseOptions, DenoiseState, Model };
