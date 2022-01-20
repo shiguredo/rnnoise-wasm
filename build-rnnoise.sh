@@ -4,7 +4,7 @@ set -eux
 # 各種設定
 EMSCRIPTEN_VERSION=3.1.0
 RNNOISE_REPOSITORY=https://github.com/shiguredo/rnnoise
-RNNOISE_VERSION=feature/rnn-model-from-string # TODO: 2022.1.0
+RNNOISE_VERSION=2022.1.0
 OPTIMIZE="-O2"
 
 # Emscriptenのバージョンチェック
