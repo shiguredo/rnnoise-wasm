@@ -112,7 +112,11 @@ class DenoiseState {
   private pcmOutputBuf: rnnoise_wasm.F32Ptr;
   private frameSize: number;
 
-  // TODO: doc
+  /**
+   * 使用しているノイズ抑制モデル
+   *
+   * `undefined` の場合はデフォルトモデルが使われていることを意味します
+   */
   readonly model?: RNNModel;
 
   /**
@@ -211,6 +215,7 @@ class RNNModel {
   constructor(rnnoiseModule: rnnoise_wasm.RnnoiseModule, modelString: string) {
     this.rnnoiseModule = rnnoiseModule;
 
+    // モデル定義文字列を、ヌル終端文字列に変換してから `rnnoise_model_from_string` 関数を呼び出す
     const modelCString = new TextEncoder().encode(modelString + "\x00");
     const modelCStringPtr = rnnoiseModule._malloc(modelCString.length);
     rnnoiseModule.HEAPU8.subarray(modelCStringPtr, modelCStringPtr + modelCString.length).set(modelCString);
