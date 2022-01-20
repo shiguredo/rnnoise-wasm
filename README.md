@@ -26,7 +26,7 @@ Please read https://github.com/shiguredo/oss/blob/master/README.en.md before use
 ```console
 $ npm install --save @shiguredo/rnnoise-wasm
 $ npm ls
-└── @shiguredo/rnnoise-wasm@2022.1.0
+└── @shiguredo/rnnoise-wasm@2022.2.0
 ```
 
 TypeScript での使用方法は次のようになります:
