@@ -1,6 +1,6 @@
 {
   "name": "@shiguredo/rnnoise-wasm",
-  "version": "2022.1.0",
+  "version": "2022.2.0",
   "description": "SIMD-accelerated WebAssembly build of RNNoise",
   "main": "dist/rnnoise.mjs",
   "module": "dist/rnnoise.mjs",

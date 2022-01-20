@@ -11,6 +11,11 @@
 
 ## develop
 
+## 2022.2.0
+- [ADD] RNNoise のモデルの差し替えに対応
+    - https://github.com/shiguredo/rnnoise-wasm/pull/16
+    - @sile
+
 ## 2022.1.0
 
 - [CHANGE] `Rnnoise` クラスのインタフェース見直しと `DenoiseState` クラスの追加
