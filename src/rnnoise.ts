@@ -124,6 +124,7 @@ class DenoiseState {
    */
   constructor(rnnoiseModule: rnnoise_wasm.RnnoiseModule, model?: Model) {
     this.rnnoiseModule = rnnoiseModule;
+    this.model = model;
 
     this.frameSize = this.rnnoiseModule._rnnoise_get_frame_size();
     let state;
