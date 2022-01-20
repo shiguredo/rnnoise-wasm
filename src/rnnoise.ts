@@ -80,7 +80,7 @@ class Rnnoise {
    * @param model 使用するノイズ抑制モデル（省略時はデフォルトモデル）
    * @returns 生成されたインスタンス
    */
-  createDenoiseState(model?: RNNModel): DenoiseState {
+  createDenoiseState(model?: Model): DenoiseState {
     return new DenoiseState(this.rnnoiseModule, model);
   }
 
@@ -90,8 +90,8 @@ class Rnnoise {
    * @param モデル定義文字列
    * @return 生成されたモデルインスタンス
    */
-  createRNNModel(modelString: string): RNNModel {
-    return new RNNModel(this.rnnoiseModule, modelString);
+  createModel(modelString: string): Model {
+    return new Model(this.rnnoiseModule, modelString);
   }
 }
 
@@ -117,12 +117,12 @@ class DenoiseState {
    *
    * `undefined` の場合はデフォルトモデルが使われていることを意味します
    */
-  readonly model?: RNNModel;
+  readonly model?: Model;
 
   /**
    * @internal
    */
-  constructor(rnnoiseModule: rnnoise_wasm.RnnoiseModule, model?: RNNModel) {
+  constructor(rnnoiseModule: rnnoise_wasm.RnnoiseModule, model?: Model) {
     this.rnnoiseModule = rnnoiseModule;
 
     this.frameSize = this.rnnoiseModule._rnnoise_get_frame_size();
@@ -199,9 +199,9 @@ class DenoiseState {
 /**
  * ノイズ抑制に使用する RNNoise のモデル
  *
- * インスタンスを作成するためには {@link Rnnoise.createRNNModel} メソッドを使用してください
+ * インスタンスを作成するためには {@link Rnnoise.createModel} メソッドを使用してください
  */
-class RNNModel {
+class Model {
   private rnnoiseModule?: rnnoise_wasm.RnnoiseModule;
 
   /**
@@ -223,7 +223,7 @@ class RNNModel {
     rnnoiseModule._free(modelCStringPtr);
 
     if (!this.model) {
-      throw Error("Failed to create RNNModel from a given model string.");
+      throw Error("Failed to create Model from a given model string.");
     }
   }
 
@@ -241,4 +241,4 @@ class RNNModel {
   }
 }
 
-export { Rnnoise, RnnoiseOptions, DenoiseState, RNNModel };
+export { Rnnoise, RnnoiseOptions, DenoiseState, Model };
