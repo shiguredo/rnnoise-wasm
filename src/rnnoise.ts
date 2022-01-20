@@ -212,7 +212,7 @@ class RNNModel {
     this.rnnoiseModule = rnnoiseModule;
 
     const modelCString = new TextEncoder().encode(modelString + "\x00");
-    let modelCStringPtr = rnnoiseModule._malloc(modelCString.length);
+    const modelCStringPtr = rnnoiseModule._malloc(modelCString.length);
     rnnoiseModule.HEAPU8.subarray(modelCStringPtr, modelCStringPtr + modelCString.length).set(modelCString);
     this.model = rnnoiseModule._rnnoise_model_from_string(modelCStringPtr);
     rnnoiseModule._free(modelCStringPtr);
