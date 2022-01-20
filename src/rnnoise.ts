@@ -77,49 +77,21 @@ class Rnnoise {
   /**
    * ノイズ抑制を行うための {@link DenoiseState} インスタンスを生成します
    *
+   * @param model 使用するノイズ抑制モデル（省略時はデフォルトモデル）
    * @returns 生成されたインスタンス
    */
   createDenoiseState(model?: RNNModel): DenoiseState {
     return new DenoiseState(this.rnnoiseModule, model);
   }
 
-  // TODO: doc
+  /**
+   * ノイズ抑制に使用する RNNoise のモデルを生成します
+   *
+   * @param モデル定義文字列
+   * @return 生成されたモデルインスタンス
+   */
   createRNNModel(modelString: string): RNNModel {
     return new RNNModel(this.rnnoiseModule, modelString);
-  }
-}
-
-// TODO: doc
-class RNNModel {
-  private rnnoiseModule?: rnnoise_wasm.RnnoiseModule;
-
-  /**
-   * @internal
-   **/
-  readonly model: rnnoise_wasm.RNNModel;
-
-  /**
-   * @internal
-   **/
-  constructor(rnnoiseModule: rnnoise_wasm.RnnoiseModule, modelString: string) {
-    this.rnnoiseModule = rnnoiseModule;
-
-    const modelCString = new TextEncoder().encode(modelString + "\x00");
-    let modelCStringPtr = rnnoiseModule._malloc(modelCString.length);
-    rnnoiseModule.HEAPU8.subarray(modelCStringPtr, modelCStringPtr + modelCString.length).set(modelCString);
-    this.model = rnnoiseModule._rnnoise_model_from_string(modelCStringPtr);
-    rnnoiseModule._free(modelCStringPtr);
-
-    if (!this.model) {
-      throw Error("Failed to create RNNModel from a given model string.");
-    }
-  }
-
-  free(): void {
-    if (this.rnnoiseModule !== undefined) {
-      this.rnnoiseModule._rnnoise_model_free(this.model);
-      this.rnnoiseModule = undefined;
-    }
   }
 }
 
@@ -215,6 +187,50 @@ class DenoiseState {
       this.rnnoiseModule._rnnoise_destroy(this.state);
       this.rnnoiseModule._free(this.pcmInputBuf);
       this.rnnoiseModule._free(this.pcmOutputBuf);
+      this.rnnoiseModule = undefined;
+    }
+  }
+}
+
+/**
+ * ノイズ抑制に使用する RNNoise のモデル
+ *
+ * インスタンスを作成するためには {@link Rnnoise.createRNNModel} メソッドを使用してください
+ */
+class RNNModel {
+  private rnnoiseModule?: rnnoise_wasm.RnnoiseModule;
+
+  /**
+   * @internal
+   **/
+  readonly model: rnnoise_wasm.RNNModel;
+
+  /**
+   * @internal
+   **/
+  constructor(rnnoiseModule: rnnoise_wasm.RnnoiseModule, modelString: string) {
+    this.rnnoiseModule = rnnoiseModule;
+
+    const modelCString = new TextEncoder().encode(modelString + "\x00");
+    let modelCStringPtr = rnnoiseModule._malloc(modelCString.length);
+    rnnoiseModule.HEAPU8.subarray(modelCStringPtr, modelCStringPtr + modelCString.length).set(modelCString);
+    this.model = rnnoiseModule._rnnoise_model_from_string(modelCStringPtr);
+    rnnoiseModule._free(modelCStringPtr);
+
+    if (!this.model) {
+      throw Error("Failed to create RNNModel from a given model string.");
+    }
+  }
+
+  /**
+   * モデルに割り当てられた wasm 内の領域を解放します
+   *
+   * このモデルを参照している {@link DenoiseState} が存在する場合には、
+   * 先にそちらの {@link DenoiseState.destroy} メソッドを呼ぶように注意してください
+   */
+  free(): void {
+    if (this.rnnoiseModule !== undefined) {
+      this.rnnoiseModule._rnnoise_model_free(this.model);
       this.rnnoiseModule = undefined;
     }
   }
