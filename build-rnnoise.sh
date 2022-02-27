@@ -2,7 +2,7 @@
 set -eux
 
 # 各種設定
-EMSCRIPTEN_VERSION=3.1.0
+EMSCRIPTEN_VERSION=3.1.5
 RNNOISE_REPOSITORY=https://github.com/shiguredo/rnnoise
 RNNOISE_VERSION=2022.1.0
 OPTIMIZE="-O2"

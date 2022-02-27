@@ -11,7 +11,10 @@
 
 ## develop
 
+- [UPDATE] Emscripten のバージョンを 3.1.0 にあげる
+
 ## 2022.2.0
+
 - [ADD] RNNoise のモデルの差し替えに対応
     - https://github.com/shiguredo/rnnoise-wasm/pull/16
     - @sile
