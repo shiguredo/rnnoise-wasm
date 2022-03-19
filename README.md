@@ -40,7 +40,7 @@ Rnnoise.load().then((rnnoise) => {
 
     // 音声フレームにノイズ抑制処理を適用する
     const frame = new Float32Array(...);
-    rnnoise.processFrame(frame);
+    denoiseState.processFrame(frame);
 
     ...
 
