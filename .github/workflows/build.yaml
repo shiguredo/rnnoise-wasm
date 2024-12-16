@@ -8,7 +8,7 @@ on:
 jobs:
   build-assets:
     name: Build WASM and JS files
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
       - uses: mymindstorm/setup-emsdk@v11
@@ -37,7 +37,7 @@ jobs:
 
   create-release-draft:
     name: Create GitHub Release Draft
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs:
       - build-assets
     outputs:
@@ -59,7 +59,7 @@ jobs:
 
   upload-assets:
     name: Upload WASM and JS files
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs:
       - create-release-draft
     steps:
@@ -106,7 +106,7 @@ jobs:
 
   notification:
     name: Slack Notification
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs:
       - build-assets
       - create-release-draft
