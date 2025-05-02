@@ -117,13 +117,13 @@ jobs:
     if: always()
     steps:
       - uses: actions/checkout@v4
-      - uses: rtCamp/action-slack-notify@v2
-        if: |
-          needs.build-assets.result == 'failure' ||
-          needs.create-release-draft.result == 'failure' ||
-          needs.upload-assets.result == 'failure'
-        env:
-          SLACK_CHANNEL: media-processors
-          SLACK_COLOR: danger
-          SLACK_TITLE: Failure build
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      # - uses: rtCamp/action-slack-notify@v2
+      #   if: |
+      #     needs.build-assets.result == 'failure' ||
+      #     needs.create-release-draft.result == 'failure' ||
+      #     needs.upload-assets.result == 'failure'
+      #   env:
+      #     SLACK_CHANNEL: media-processors
+      #     SLACK_COLOR: danger
+      #     SLACK_TITLE: Failure build
+      #     SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
