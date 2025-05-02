@@ -9,15 +9,15 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
-        node: ['16']
+        node: ['20']
     steps:
-      - uses: actions/checkout@v2
-      - uses: mymindstorm/setup-emsdk@v11
+      - uses: actions/checkout@v4
+      - uses: mymindstorm/setup-emsdk@v14
         with:
-          version: 3.1.0
+          version: 4.0.8
       - run: emcc --version
       - run: sudo apt install -y autoconf automake
       - run: ./build-rnnoise.sh

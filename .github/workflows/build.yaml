@@ -8,12 +8,12 @@ on:
 jobs:
   build-assets:
     name: Build WASM and JS files
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v2
-      - uses: mymindstorm/setup-emsdk@v11
+      - uses: actions/checkout@v4
+      - uses: mymindstorm/setup-emsdk@v14
         with:
-          version: 3.1.0
+          version: 4.0.8
       - run: emcc --version
       - run: sudo apt install -y autoconf automake
       - run: ./build-rnnoise.sh
@@ -22,7 +22,7 @@ jobs:
       #        setup-nodeはその後に呼び出す必要がある。
       - uses: actions/setup-node@v2
         with:
-          node-version: 16
+          node-version: 20
           cache: npm
       - run: node --version
       - run: npm --version
@@ -37,7 +37,7 @@ jobs:
 
   create-release-draft:
     name: Create GitHub Release Draft
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs:
       - build-assets
     outputs:
@@ -59,7 +59,7 @@ jobs:
 
   upload-assets:
     name: Upload WASM and JS files
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs:
       - create-release-draft
     steps:
@@ -106,14 +106,14 @@ jobs:
 
   notification:
     name: Slack Notification
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs:
       - build-assets
       - create-release-draft
       - upload-assets
     if: always()
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - uses: rtCamp/action-slack-notify@v2
         if: |
           needs.build-assets.result == 'failure' ||
