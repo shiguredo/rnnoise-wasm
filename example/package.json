@@ -1,0 +1,11 @@
+{
+  "name": "rnnoise-wasm-example",
+  "scripts": {
+    "lint": "biome lint .",
+    "fmt": "biome format --write .",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@shiguredo/rnnoise-wasm": "workspace:*"
+  }
+}

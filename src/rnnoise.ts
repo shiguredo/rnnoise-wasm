@@ -53,7 +53,9 @@ class Rnnoise {
       return loadRnnoiseModule({
         locateFile: (path, prefix) => {
           if (options.assetsPath !== undefined) {
-            prefix = options.assetsPath.endsWith('/') ? options.assetsPath : `${options.assetsPath}/`
+            prefix = options.assetsPath.endsWith('/')
+              ? options.assetsPath
+              : `${options.assetsPath}/`
           }
 
           if (options.wasmFileName !== undefined) {
