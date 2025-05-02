@@ -6,6 +6,8 @@ import { createRequire } from 'node:module'
 globalThis.__dirname = 'dist/'
 globalThis.require = createRequire(import.meta.url)
 
+import { expect, test } from 'vitest'
+
 import { Rnnoise } from '../dist/rnnoise'
 
 test('Create instance and process a frame (non SIMD)', async () => {

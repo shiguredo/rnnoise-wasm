@@ -10,10 +10,8 @@
     "build": "vite build",
     "lint": "biome lint",
     "fmt": "biome format --write",
-    "test": "vitest",
+    "test": "vitest run",
     "legacy_build": "rollup -c ./rollup.config.js && tsc --emitDeclarationOnly",
-    "legacy_lint": "eslint --ext .ts ./src",
-    "legacy_fmt": "prettier --write src",
     "legacy_test": "NODE_OPTIONS=--experimental-vm-modules npx jest",
     "doc": "typedoc"
   },
@@ -21,32 +19,22 @@
     "type": "git",
     "url": "git+https://github.com/shiguredo/rnnoise-wasm.git"
   },
-  "keywords": ["rnnoise", "noise-suppression"],
+  "keywords": [
+    "rnnoise",
+    "noise-suppression"
+  ],
   "author": "Shiguredo Inc.",
   "license": "Apache-2.0",
   "bugs": {
     "url": "https://discord.gg/shiguredo"
   },
   "homepage": "https://github.com/shiguredo/rnnoise-wasm#readme",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@rollup/plugin-commonjs": "28.0.3",
-    "@rollup/plugin-node-resolve": "16.0.1",
-    "@rollup/plugin-typescript": "12.1.2",
     "@types/emscripten": "1.40.1",
-    "@types/jest": "29.5.14",
-    "@typescript-eslint/eslint-plugin": "8.31.1",
-    "@typescript-eslint/parser": "8.31.1",
-    "eslint": "9.25.1",
-    "eslint-config-prettier": "10.1.2",
-    "eslint-plugin-prettier": "5.2.6",
-    "jest": "29.7.0",
-    "prettier": "3.5.3",
-    "rollup": "4.40.1",
-    "serve": "14.2.4",
-    "ts-jest": "29.3.2",
-    "ts-node": "10.9.2",
     "tslib": "2.8.1",
     "typedoc": "0.28.3",
     "typescript": "5.8.3",
