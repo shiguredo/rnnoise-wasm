@@ -11,6 +11,9 @@
 
 ## develop
 
+- [CHANGE] Emscripten のバージョンを 4.0.8 にアップデートする
+  - @voluntas
+
 ### misc
 
 - [CHANGE] npm から pnpm に変更する
