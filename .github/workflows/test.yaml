@@ -27,13 +27,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-          cache: npm
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
       - run: node --version
-      - run: npm --version
-      - run: npm install
-      - run: npm run build
-      - run: npm run lint
-      - run: npm run test
+      - run: pnpm --version
+      - run: pnpm install
+      - run: pnpm run build
+      - run: pnpm run lint
+      - run: pnpm run test
       - name: Slack Notification
         if: failure()
         uses: rtCamp/action-slack-notify@v2

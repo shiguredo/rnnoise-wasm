@@ -23,11 +23,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
       - run: node --version
-      - run: npm --version
-      - run: npm install
-      - run: npm run build
+      - run: pnpm --version
+      - run: pnpm install
+      - run: pnpm run build
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v2
