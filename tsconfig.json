@@ -1,18 +1,19 @@
 {
-  "compilerOptions": {
-    "lib": ["es2015", "dom"],
-    "target": "esnext",
-    "module": "commonjs",
-    "outDir": "dist",
-    "strict": true,
-    "declaration": true,
-    "strictNullChecks": true,
+	"compilerOptions": {
+    "target": "ES2022",
+    "module": "ES2022",
+		"strict": true,
+		"outDir": "dist",
+    "moduleResolution": "Bundler",
+		"declaration": true,
+		"strictNullChecks": true,
     "importHelpers": true,
     "experimentalDecorators": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "newLine": "LF",
-    "stripInternal": true
+    "stripInternal": true,
+		"lib": ["ESNext", "dom"]
   },
   "include": [
     "src"
