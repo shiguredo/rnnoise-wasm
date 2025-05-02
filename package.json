@@ -11,8 +11,6 @@
     "lint": "biome lint",
     "fmt": "biome format --write",
     "test": "vitest run",
-    "legacy_build": "rollup -c ./rollup.config.js && tsc --emitDeclarationOnly",
-    "legacy_test": "NODE_OPTIONS=--experimental-vm-modules npx jest",
     "doc": "typedoc"
   },
   "repository": {
