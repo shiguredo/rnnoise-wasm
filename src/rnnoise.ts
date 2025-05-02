@@ -1,6 +1,6 @@
-import { simd } from "wasm-feature-detect";
-import loadRnnoiseModule from "./rnnoise_wasm.js";
-import * as rnnoise_wasm from "./rnnoise_wasm.js";
+import { simd } from 'wasm-feature-detect'
+import loadRnnoiseModule from './rnnoise_wasm.js'
+import type * as rnnoise_wasm from './rnnoise_wasm.js'
 
 /**
  * {@link Rnnoise.load} 関数に指定可能なオプション
@@ -11,14 +11,14 @@ interface RnnoiseOptions {
    *
    * デフォルトでは `rnnoise.js` の配置先と同じディレクトリが使用されます
    */
-  assetsPath?: string;
+  assetsPath?: string
 
   /**
    * @internal
    *
    * 使用する wasm ファイルの名前（テスト用オプション）
    */
-  wasmFileName?: string;
+  wasmFileName?: string
 }
 
 /**
@@ -27,16 +27,16 @@ interface RnnoiseOptions {
  * インスタンスを作成するためには {@link Rnnoise.load} 関数を使用してください
  */
 class Rnnoise {
-  private rnnoiseModule: rnnoise_wasm.RnnoiseModule;
+  private rnnoiseModule: rnnoise_wasm.RnnoiseModule
 
   /**
    * 一度の {@link DenoiseState.processFrame} メソッド呼び出しで処理可能なサンプル数
    */
-  readonly frameSize: number;
+  readonly frameSize: number
 
   private constructor(rnnoiseModule: rnnoise_wasm.RnnoiseModule) {
-    this.rnnoiseModule = rnnoiseModule;
-    this.frameSize = rnnoiseModule._rnnoise_get_frame_size();
+    this.rnnoiseModule = rnnoiseModule
+    this.frameSize = rnnoiseModule._rnnoise_get_frame_size()
   }
 
   /**
@@ -53,25 +53,25 @@ class Rnnoise {
       return loadRnnoiseModule({
         locateFile: (path, prefix) => {
           if (options.assetsPath !== undefined) {
-            prefix = options.assetsPath + "/";
+            prefix = `${options.assetsPath}/`
           }
 
           if (options.wasmFileName !== undefined) {
-            path = options.wasmFileName;
-            console.debug("Loads rnnoise-wasm: ", prefix + path);
+            path = options.wasmFileName
+            console.debug('Loads rnnoise-wasm: ', prefix + path)
           } else if (isSupported) {
-            path = "rnnoise_simd.wasm";
-            console.debug("Loads rnnoise-wasm (SIMD ver): ", prefix + path);
+            path = 'rnnoise_simd.wasm'
+            console.debug('Loads rnnoise-wasm (SIMD ver): ', prefix + path)
           } else {
-            console.debug("Loads rnnoise-wasm (non SIMD ver): ", prefix + path);
+            console.debug('Loads rnnoise-wasm (non SIMD ver): ', prefix + path)
           }
 
-          return prefix + path;
+          return prefix + path
         },
-      });
-    });
+      })
+    })
 
-    return Promise.resolve(new Rnnoise(rnnoiseModule));
+    return Promise.resolve(new Rnnoise(rnnoiseModule))
   }
 
   /**
@@ -81,7 +81,7 @@ class Rnnoise {
    * @returns 生成されたインスタンス
    */
   createDenoiseState(model?: Model): DenoiseState {
-    return new DenoiseState(this.rnnoiseModule, model);
+    return new DenoiseState(this.rnnoiseModule, model)
   }
 
   /**
@@ -91,11 +91,11 @@ class Rnnoise {
    * @return 生成されたモデルインスタンス
    */
   createModel(modelString: string): Model {
-    return new Model(this.rnnoiseModule, modelString);
+    return new Model(this.rnnoiseModule, modelString)
   }
 }
 
-const F32_BYTE_SIZE = 4;
+const F32_BYTE_SIZE = 4
 
 /**
  * ノイズ抑制に必要な状態を保持するクラス
@@ -106,43 +106,43 @@ const F32_BYTE_SIZE = 4;
  * 呼び出す必要があることに注意してください
  */
 class DenoiseState {
-  private rnnoiseModule?: rnnoise_wasm.RnnoiseModule;
-  private state: rnnoise_wasm.DenoiseState;
-  private pcmInputBuf: rnnoise_wasm.F32Ptr;
-  private pcmOutputBuf: rnnoise_wasm.F32Ptr;
-  private frameSize: number;
+  private rnnoiseModule?: rnnoise_wasm.RnnoiseModule
+  private state: rnnoise_wasm.DenoiseState
+  private pcmInputBuf: rnnoise_wasm.F32Ptr
+  private pcmOutputBuf: rnnoise_wasm.F32Ptr
+  private frameSize: number
 
   /**
    * 使用しているノイズ抑制モデル
    *
    * `undefined` の場合はデフォルトモデルが使われていることを意味します
    */
-  readonly model?: Model;
+  readonly model?: Model
 
   /**
    * @internal
    */
   constructor(rnnoiseModule: rnnoise_wasm.RnnoiseModule, model?: Model) {
-    this.rnnoiseModule = rnnoiseModule;
-    this.model = model;
+    this.rnnoiseModule = rnnoiseModule
+    this.model = model
 
-    this.frameSize = this.rnnoiseModule._rnnoise_get_frame_size();
-    let state;
+    this.frameSize = this.rnnoiseModule._rnnoise_get_frame_size()
+    let state
     if (model !== undefined) {
-      state = this.rnnoiseModule._rnnoise_create(model.model);
+      state = this.rnnoiseModule._rnnoise_create(model.model)
     } else {
-      state = this.rnnoiseModule._rnnoise_create();
+      state = this.rnnoiseModule._rnnoise_create()
     }
-    const pcmInputBuf = this.rnnoiseModule._malloc(this.frameSize * F32_BYTE_SIZE);
-    const pcmOutputBuf = this.rnnoiseModule._malloc(this.frameSize * F32_BYTE_SIZE);
+    const pcmInputBuf = this.rnnoiseModule._malloc(this.frameSize * F32_BYTE_SIZE)
+    const pcmOutputBuf = this.rnnoiseModule._malloc(this.frameSize * F32_BYTE_SIZE)
     if (!state || !pcmInputBuf || !pcmOutputBuf) {
-      this.destroy();
-      throw Error("Failed to allocate DenoiseState or PCM buffers.");
+      this.destroy()
+      throw Error('Failed to allocate DenoiseState or PCM buffers.')
     }
 
-    this.state = state;
-    this.pcmInputBuf = pcmInputBuf;
-    this.pcmOutputBuf = pcmOutputBuf;
+    this.state = state
+    this.pcmInputBuf = pcmInputBuf
+    this.pcmOutputBuf = pcmOutputBuf
   }
 
   /**
@@ -165,21 +165,25 @@ class DenoiseState {
    */
   processFrame(frame: Float32Array): number {
     if (this.rnnoiseModule === undefined) {
-      throw Error("This denoise state has already been destroyed.");
+      throw Error('This denoise state has already been destroyed.')
     }
 
-    if (frame.length != this.frameSize) {
-      throw Error(`Expected frame size ${this.frameSize}, but got ${frame.length}`);
+    if (frame.length !== this.frameSize) {
+      throw Error(`Expected frame size ${this.frameSize}, but got ${frame.length}`)
     }
 
-    const pcmInputIndex = this.pcmInputBuf / F32_BYTE_SIZE;
-    const pcmOutputIndex = this.pcmOutputBuf / F32_BYTE_SIZE;
+    const pcmInputIndex = this.pcmInputBuf / F32_BYTE_SIZE
+    const pcmOutputIndex = this.pcmOutputBuf / F32_BYTE_SIZE
 
-    this.rnnoiseModule.HEAPF32.set(frame, pcmInputIndex);
-    const vad = this.rnnoiseModule._rnnoise_process_frame(this.state, this.pcmOutputBuf, this.pcmInputBuf);
-    frame.set(this.rnnoiseModule.HEAPF32.subarray(pcmOutputIndex, pcmOutputIndex + this.frameSize));
+    this.rnnoiseModule.HEAPF32.set(frame, pcmInputIndex)
+    const vad = this.rnnoiseModule._rnnoise_process_frame(
+      this.state,
+      this.pcmOutputBuf,
+      this.pcmInputBuf,
+    )
+    frame.set(this.rnnoiseModule.HEAPF32.subarray(pcmOutputIndex, pcmOutputIndex + this.frameSize))
 
-    return vad;
+    return vad
   }
 
   /**
@@ -189,10 +193,10 @@ class DenoiseState {
    */
   destroy() {
     if (this.rnnoiseModule !== undefined) {
-      this.rnnoiseModule._rnnoise_destroy(this.state);
-      this.rnnoiseModule._free(this.pcmInputBuf);
-      this.rnnoiseModule._free(this.pcmOutputBuf);
-      this.rnnoiseModule = undefined;
+      this.rnnoiseModule._rnnoise_destroy(this.state)
+      this.rnnoiseModule._free(this.pcmInputBuf)
+      this.rnnoiseModule._free(this.pcmOutputBuf)
+      this.rnnoiseModule = undefined
     }
   }
 }
@@ -203,28 +207,30 @@ class DenoiseState {
  * インスタンスを作成するためには {@link Rnnoise.createModel} メソッドを使用してください
  */
 class Model {
-  private rnnoiseModule?: rnnoise_wasm.RnnoiseModule;
+  private rnnoiseModule?: rnnoise_wasm.RnnoiseModule
 
   /**
    * @internal
    **/
-  readonly model: rnnoise_wasm.RNNModel;
+  readonly model: rnnoise_wasm.RNNModel
 
   /**
    * @internal
    **/
   constructor(rnnoiseModule: rnnoise_wasm.RnnoiseModule, modelString: string) {
-    this.rnnoiseModule = rnnoiseModule;
+    this.rnnoiseModule = rnnoiseModule
 
     // モデル定義文字列を、ヌル終端文字列に変換してから `rnnoise_model_from_string` 関数を呼び出す
-    const modelCString = new TextEncoder().encode(modelString + "\x00");
-    const modelCStringPtr = rnnoiseModule._malloc(modelCString.length);
-    rnnoiseModule.HEAPU8.subarray(modelCStringPtr, modelCStringPtr + modelCString.length).set(modelCString);
-    this.model = rnnoiseModule._rnnoise_model_from_string(modelCStringPtr);
-    rnnoiseModule._free(modelCStringPtr);
+    const modelCString = new TextEncoder().encode(`${modelString}\x00`)
+    const modelCStringPtr = rnnoiseModule._malloc(modelCString.length)
+    rnnoiseModule.HEAPU8.subarray(modelCStringPtr, modelCStringPtr + modelCString.length).set(
+      modelCString,
+    )
+    this.model = rnnoiseModule._rnnoise_model_from_string(modelCStringPtr)
+    rnnoiseModule._free(modelCStringPtr)
 
     if (!this.model) {
-      throw Error("Failed to create Model from a given model string.");
+      throw Error('Failed to create Model from a given model string.')
     }
   }
 
@@ -236,10 +242,10 @@ class Model {
    */
   free(): void {
     if (this.rnnoiseModule !== undefined) {
-      this.rnnoiseModule._rnnoise_model_free(this.model);
-      this.rnnoiseModule = undefined;
+      this.rnnoiseModule._rnnoise_model_free(this.model)
+      this.rnnoiseModule = undefined
     }
   }
 }
 
-export { Rnnoise, RnnoiseOptions, DenoiseState, Model };
+export { Rnnoise, type RnnoiseOptions, DenoiseState, Model }

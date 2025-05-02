@@ -1,7 +1,7 @@
-import { resolve } from "node:path";
-import { defineConfig } from "vite";
-import dts from "vite-plugin-dts";
-import pkg from "./package.json";
+import { resolve } from 'node:path'
+import { defineConfig } from 'vite'
+import dts from 'vite-plugin-dts'
+import pkg from './package.json'
 
 const banner = `/**
  * ${pkg.name}
@@ -10,35 +10,35 @@ const banner = `/**
  * @author: ${pkg.author}
  * @license: ${pkg.license}
  **/
-`;
+`
 
 export default defineConfig({
-	define: {
-		__RNNOISE_VERSION__: JSON.stringify(pkg.version),
-	},
-	root: process.cwd(),
-	build: {
-		minify: "esbuild",
-		target: "es2022",
-		emptyOutDir: true,
-		manifest: true,
-		outDir: resolve(__dirname, "./dist"),
-		lib: {
-			entry: resolve(__dirname, "src/rnnoise.ts"),
-			name: "RNNoise",
-			formats: ["es"],
-			fileName: "rnnoise",
-		},
-		rollupOptions: {
-			output: {
-				banner: banner,
-			},
-		},
-	},
-	envDir: resolve(__dirname, "./"),
-	plugins: [
-		dts({
-			include: ["src/**/*"],
-		}),
-	],
-});
+  define: {
+    __RNNOISE_VERSION__: JSON.stringify(pkg.version),
+  },
+  root: process.cwd(),
+  build: {
+    minify: 'esbuild',
+    target: 'es2022',
+    emptyOutDir: true,
+    manifest: true,
+    outDir: resolve(__dirname, './dist'),
+    lib: {
+      entry: resolve(__dirname, 'src/rnnoise.ts'),
+      name: 'RNNoise',
+      formats: ['es'],
+      fileName: 'rnnoise',
+    },
+    rollupOptions: {
+      output: {
+        banner: banner,
+      },
+    },
+  },
+  envDir: resolve(__dirname, './'),
+  plugins: [
+    dts({
+      include: ['src/**/*'],
+    }),
+  ],
+})

@@ -1,21 +1,19 @@
 {
-	"compilerOptions": {
+  "compilerOptions": {
     "target": "ES2022",
     "module": "ES2022",
-		"strict": true,
-		"outDir": "dist",
+    "strict": true,
+    "outDir": "dist",
     "moduleResolution": "Bundler",
-		"declaration": true,
-		"strictNullChecks": true,
+    "declaration": true,
+    "strictNullChecks": true,
     "importHelpers": true,
     "experimentalDecorators": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "newLine": "LF",
     "stripInternal": true,
-		"lib": ["ESNext", "dom"]
+    "lib": ["ESNext", "dom"]
   },
-  "include": [
-    "src"
-  ]
+  "include": ["src"]
 }
