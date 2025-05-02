@@ -11,15 +11,10 @@
     "rules": {
       "recommended": true,
       "suspicious": {
-        "noImplicitAnyLet": "off",
-        "noAssignInExpressions": "off"
-      },
-      "correctness": {
-        "noConstantCondition": "off"
+        "noImplicitAnyLet": "off"
       },
       "style": {
-        "noParameterAssign": "off",
-        "useConst": "off"
+        "noParameterAssign": "off"
       }
     }
   },
