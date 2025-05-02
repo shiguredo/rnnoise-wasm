@@ -24,7 +24,7 @@ jobs:
 
       # [注意] setup-emsdkが古いnode/npmをインストールしてしまうので、
       #        setup-nodeはその後に呼び出す必要がある。
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
           cache: npm
