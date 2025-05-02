@@ -9,36 +9,38 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
-        node: ['16']
+        node: ['20']
     steps:
-      - uses: actions/checkout@v2
-      - uses: mymindstorm/setup-emsdk@v11
+      - uses: actions/checkout@v4
+      - uses: mymindstorm/setup-emsdk@v14
         with:
-          version: 3.1.0
+          version: 4.0.8
       - run: emcc --version
       - run: sudo apt install -y autoconf automake
       - run: ./build-rnnoise.sh
 
       # [注意] setup-emsdkが古いnode/npmをインストールしてしまうので、
       #        setup-nodeはその後に呼び出す必要がある。
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-          cache: npm
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
       - run: node --version
-      - run: npm --version
-      - run: npm install
-      - run: npm run build
-      - run: npm run lint
-      - run: npm run test
-      - name: Slack Notification
-        if: failure()
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_CHANNEL: media-processors
-          SLACK_COLOR: danger
-          SLACK_TITLE: Failure test
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      - run: pnpm --version
+      - run: pnpm install
+      - run: pnpm run build
+      - run: pnpm run lint
+      - run: pnpm run test
+      # - name: Slack Notification
+      #   if: failure()
+      #   uses: rtCamp/action-slack-notify@v2
+      #   env:
+      #     SLACK_CHANNEL: media-processors
+      #     SLACK_COLOR: danger
+      #     SLACK_TITLE: Failure test
+      #     SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}

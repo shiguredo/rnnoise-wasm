@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
-    "lib": ["es2015", "dom"],
-    "target": "esnext",
-    "module": "commonjs",
-    "outDir": "dist",
+    "target": "ES2022",
+    "module": "ES2022",
     "strict": true,
+    "outDir": "dist",
+    "moduleResolution": "Bundler",
     "declaration": true,
     "strictNullChecks": true,
     "importHelpers": true,
@@ -12,9 +12,8 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "newLine": "LF",
-    "stripInternal": true
+    "stripInternal": true,
+    "lib": ["ESNext", "dom"]
   },
-  "include": [
-    "src"
-  ]
+  "include": ["src"]
 }

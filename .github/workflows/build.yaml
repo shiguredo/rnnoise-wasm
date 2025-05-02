@@ -8,26 +8,29 @@ on:
 jobs:
   build-assets:
     name: Build WASM and JS files
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v2
-      - uses: mymindstorm/setup-emsdk@v11
+      - uses: actions/checkout@v4
+      - uses: mymindstorm/setup-emsdk@v14
         with:
-          version: 3.1.0
+          version: 4.0.8
       - run: emcc --version
       - run: sudo apt install -y autoconf automake
       - run: ./build-rnnoise.sh
 
       # [注意] setup-emsdkが古いnode/npmをインストールしてしまうので、
       #        setup-nodeはその後に呼び出す必要がある。
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v4
         with:
-          node-version: 16
-          cache: npm
+          node-version: 20
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
       - run: node --version
-      - run: npm --version
-      - run: npm install
-      - run: npm run build
+      - run: pnpm --version
+      - run: pnpm install
+      - run: pnpm run build
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v2
@@ -37,7 +40,7 @@ jobs:
 
   create-release-draft:
     name: Create GitHub Release Draft
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs:
       - build-assets
     outputs:
@@ -59,7 +62,7 @@ jobs:
 
   upload-assets:
     name: Upload WASM and JS files
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs:
       - create-release-draft
     steps:
@@ -106,21 +109,21 @@ jobs:
 
   notification:
     name: Slack Notification
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs:
       - build-assets
       - create-release-draft
       - upload-assets
     if: always()
     steps:
-      - uses: actions/checkout@v2
-      - uses: rtCamp/action-slack-notify@v2
-        if: |
-          needs.build-assets.result == 'failure' ||
-          needs.create-release-draft.result == 'failure' ||
-          needs.upload-assets.result == 'failure'
-        env:
-          SLACK_CHANNEL: media-processors
-          SLACK_COLOR: danger
-          SLACK_TITLE: Failure build
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      - uses: actions/checkout@v4
+      # - uses: rtCamp/action-slack-notify@v2
+      #   if: |
+      #     needs.build-assets.result == 'failure' ||
+      #     needs.create-release-draft.result == 'failure' ||
+      #     needs.upload-assets.result == 'failure'
+      #   env:
+      #     SLACK_CHANNEL: media-processors
+      #     SLACK_COLOR: danger
+      #     SLACK_TITLE: Failure build
+      #     SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
