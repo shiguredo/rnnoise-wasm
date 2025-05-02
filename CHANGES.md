@@ -13,7 +13,15 @@
 
 ### misc
 
-- [CHANGE] GitHub Actions の ubuntu-latest を ubuntu-22.04 に変更
+- [CHANGE] npm から pnpm に変更する
+  - @voluntas
+- [CHANGE] Rollup から Vite に変更する
+  - @voluntas
+- [CHANGE] Jest から Vitest に変更する
+  - @voluntas
+- [CHANGE] ESLint から Biome に変更する
+  - @voluntas
+- [CHANGE] GitHub Actions の ubuntu-latest を ubuntu-24.04 に変更
   - @voluntas
 
 ## 2022.2.0

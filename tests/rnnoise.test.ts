@@ -10,6 +10,7 @@ import { expect, test } from 'vitest'
 
 import { Rnnoise } from '../dist/rnnoise'
 
+// FIXME: テストが失敗するので、一旦失敗前提にする
 test.fails('Create instance and process a frame (non SIMD)', async () => {
   // @ts-ignore `wasmFileName` は内部APIなので型定義ファイルに含まれていないため警告が出るけど、想定通りの使い方なので無視
   const rnnoise = await Rnnoise.load({ wasmFileName: 'rnnoise.wasm' })
@@ -22,6 +23,7 @@ test.fails('Create instance and process a frame (non SIMD)', async () => {
   buffer.forEach((x, i) => expect(x).toBeCloseTo(TEST_FRAME_PROCESSED[i]))
 })
 
+// FIXME: テストが失敗するので、一旦失敗前提にする
 test.fails('Create instance and process a frame (SIMD)', async () => {
   // @ts-ignore `wasmFileName` は内部APIなので型定義ファイルに含まれていないため警告が出るけど、想定通りの使い方なので無視
   const rnnoise = await Rnnoise.load({ wasmFileName: 'rnnoise_simd.wasm' })
