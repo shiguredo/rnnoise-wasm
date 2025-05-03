@@ -44,6 +44,10 @@ importers:
       '@shiguredo/rnnoise-wasm':
         specifier: workspace:*
         version: link:..
+    devDependencies:
+      vite-plugin-wasm:
+        specifier: 3.4.1
+        version: 3.4.1(vite@6.3.4(@types/node@22.15.3)(yaml@2.7.1))
 
 packages:
 
@@ -1001,6 +1005,11 @@ packages:
     engines: {node: ^18.0.0 || >=20.0.0}
     peerDependencies:
       vite: ^5.0.0 || ^6.0.0
+
+  vite-plugin-wasm@3.4.1:
+    resolution: {integrity: sha512-ja3nSo2UCkVeitltJGkS3pfQHAanHv/DqGatdI39ja6McgABlpsZ5hVgl6wuR8Qx5etY3T5qgDQhOWzc5RReZA==}
+    peerDependencies:
+      vite: ^2 || ^3 || ^4 || ^5 || ^6
 
   vite@6.3.4:
     resolution: {integrity: sha512-BiReIiMS2fyFqbqNT/Qqt4CVITDU9M9vE+DKcVAsB+ZV0wvTKd+3hMbkpxz1b+NmEDMegpVbisKiAZOnvO92Sw==}
@@ -1981,6 +1990,10 @@ snapshots:
       fs-extra: 11.3.0
       p-map: 7.0.3
       picocolors: 1.1.1
+      vite: 6.3.4(@types/node@22.15.3)(yaml@2.7.1)
+
+  vite-plugin-wasm@3.4.1(vite@6.3.4(@types/node@22.15.3)(yaml@2.7.1)):
+    dependencies:
       vite: 6.3.4(@types/node@22.15.3)(yaml@2.7.1)
 
   vite@6.3.4(@types/node@22.15.3)(yaml@2.7.1):

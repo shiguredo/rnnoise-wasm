@@ -19,8 +19,8 @@ export default defineConfig({
   root: process.cwd(),
   build: {
     minify: 'esbuild',
-    target: 'es2022',
-    emptyOutDir: true,
+    target: 'es2023',
+    emptyOutDir: false,
     manifest: true,
     outDir: resolve(__dirname, './dist'),
     lib: {
@@ -35,6 +35,7 @@ export default defineConfig({
       },
     },
   },
+  assetsInclude: ['**/*.wasm'],
   envDir: resolve(__dirname, './'),
   plugins: [
     dts({
