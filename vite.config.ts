@@ -35,7 +35,7 @@ export default defineConfig({
       },
     },
   },
-  assetsInclude: ['**/*.wasm'],
+  // assetsInclude: ['**/*.wasm'],
   envDir: resolve(__dirname, './'),
   plugins: [
     dts({
