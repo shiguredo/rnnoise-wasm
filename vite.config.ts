@@ -18,10 +18,9 @@ export default defineConfig({
   },
   root: process.cwd(),
   build: {
-    assetsInlineLimit: 0,
-    // minify: 'esbuild',
+    minify: 'esbuild',
     target: 'esnext',
-    emptyOutDir: true,
+    emptyOutDir: false,
     manifest: true,
     outDir: resolve(__dirname, './dist'),
     lib: {
@@ -40,6 +39,6 @@ export default defineConfig({
   plugins: [
     dts({
       include: ['src/**/*'],
-    })
+    }),
   ],
 })
