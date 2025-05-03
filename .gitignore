@@ -32,11 +32,8 @@ dist
 
 # Ignore generated files by build.sh
 src/rnnoise.wasm
-src/rnnoise_wasm.mjs
-src/rnnoise.support.mjs
+src/rnnoise_wasm.js
 src/rnnoise_simd.wasm
-src/rnnoise_simd_wasm.mjs
-src/rnnoise_simd.support.mjs
 
 # Ignore generated docs
 apidoc/

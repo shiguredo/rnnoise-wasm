@@ -1,4 +1,5 @@
 import { simd } from 'wasm-feature-detect'
+
 import loadRnnoiseModule from './rnnoise_wasm'
 import type * as rnnoise_wasm from './rnnoise_wasm'
 
