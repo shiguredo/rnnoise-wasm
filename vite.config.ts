@@ -1,8 +1,6 @@
 import { resolve } from 'node:path'
 import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
-import topLevelAwait from 'vite-plugin-top-level-await'
-import wasm from 'vite-plugin-wasm'
 import pkg from './package.json'
 
 const banner = `/**
@@ -42,8 +40,6 @@ export default defineConfig({
   plugins: [
     dts({
       include: ['src/**/*'],
-    }),
-    wasm(),
-    topLevelAwait(),
+    })
   ],
 })
