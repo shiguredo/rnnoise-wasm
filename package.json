@@ -1,6 +1,6 @@
 {
   "name": "@shiguredo/rnnoise-wasm",
-  "version": "2022.2.0",
+  "version": "2025.1.0",
   "description": "SIMD-accelerated WebAssembly build of RNNoise",
   "type": "module",
   "exports": {
@@ -44,6 +44,8 @@
     "vite": "6.3.4",
     "vite-plugin-dts": "4.5.3",
     "vite-plugin-static-copy": "2.3.1",
+    "vite-plugin-top-level-await": "1.5.0",
+    "vite-plugin-wasm": "3.4.1",
     "vitest": "3.1.2",
     "wasm-feature-detect": "1.8.0"
   },

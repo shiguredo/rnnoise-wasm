@@ -1,6 +1,8 @@
 import { resolve } from 'node:path'
 import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
+import topLevelAwait from 'vite-plugin-top-level-await'
+import wasm from 'vite-plugin-wasm'
 import pkg from './package.json'
 
 const banner = `/**
@@ -18,9 +20,10 @@ export default defineConfig({
   },
   root: process.cwd(),
   build: {
-    minify: 'esbuild',
-    target: 'es2023',
-    emptyOutDir: false,
+    assetsInlineLimit: 0,
+    // minify: 'esbuild',
+    target: 'esnext',
+    emptyOutDir: true,
     manifest: true,
     outDir: resolve(__dirname, './dist'),
     lib: {
@@ -35,11 +38,12 @@ export default defineConfig({
       },
     },
   },
-  // assetsInclude: ['**/*.wasm'],
   envDir: resolve(__dirname, './'),
   plugins: [
     dts({
       include: ['src/**/*'],
     }),
+    wasm(),
+    topLevelAwait(),
   ],
 })

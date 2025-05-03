@@ -10,8 +10,5 @@
   },
   "dependencies": {
     "@shiguredo/rnnoise-wasm": "workspace:*"
-  },
-  "devDependencies": {
-    "vite-plugin-wasm": "3.4.1"
   }
 }
