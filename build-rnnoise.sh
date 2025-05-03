@@ -3,8 +3,8 @@ set -eux
 
 # 各種設定
 EMSCRIPTEN_VERSION=4.0.8
-RNNOISE_REPOSITORY=https://github.com/shiguredo/rnnoise
-RNNOISE_VERSION=2022.1.0
+RNNOISE_REPOSITORY=https://github.com/xiph/rnnoise
+RNNOISE_VERSION=70f1d256acd4b34a572f999a05c87bf00b67730d
 OPTIMIZE="-O2"
 
 # Emscriptenのバージョンチェック
@@ -55,7 +55,7 @@ function build_rnnoise() {
     -s INCOMING_MODULE_JS_API=['locateFile'] \
     -s EXPORT_ES6=1 \
     -s EXPORTED_RUNTIME_METHODS=HEAPF32 \
-    -s EXPORTED_FUNCTIONS="['_rnnoise_process_frame', '_rnnoise_destroy', '_rnnoise_create', '_rnnoise_get_frame_size', '_rnnoise_model_from_string', '_rnnoise_model_free', '_malloc', '_free']" \
+    -s EXPORTED_FUNCTIONS="['_rnnoise_process_frame', '_rnnoise_destroy', '_rnnoise_create', '_rnnoise_get_frame_size', '_rnnoise_model_free', '_malloc', '_free']" \
     .libs/librnnoise.a \
     -o $NAME.js
 
@@ -69,7 +69,6 @@ build_rnnoise "${OPTIMIZE}" "" "rnnoise"
 # build_rnnoise "${OPTIMIZE} -msimd128" "--enable-wasm-simd" "rnnoise_simd"
 
 # ビルド結果をコピー (JavaScriptファイルはSIMD対応・非対応のどちらでも同じなので使い回す）
-mkdir -p dist
 # mv $BUILD_DIR/rnnoise/rnnoise/rnnoise.wasm dist/
 mv $BUILD_DIR/rnnoise/rnnoise/rnnoise.js src/rnnoise_wasm.js
 # mv $BUILD_DIR/rnnoise_simd/rnnoise/rnnoise_simd.wasm dist/
