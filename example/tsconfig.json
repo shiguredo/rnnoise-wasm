@@ -14,7 +14,7 @@
     "newLine": "LF",
     "stripInternal": true,
     "lib": ["ESNext", "dom"],
-    "baseUrl": ".",
+    "baseUrl": "."
   },
   "include": ["src"]
 }

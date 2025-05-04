@@ -22,19 +22,14 @@
     "type": "git",
     "url": "git+https://github.com/shiguredo/rnnoise-wasm.git"
   },
-  "keywords": [
-    "rnnoise",
-    "noise-suppression"
-  ],
+  "keywords": ["rnnoise", "noise-suppression"],
   "author": "Shiguredo Inc.",
   "license": "Apache-2.0",
   "bugs": {
     "url": "https://discord.gg/shiguredo"
   },
   "homepage": "https://github.com/shiguredo/rnnoise-wasm#readme",
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@types/emscripten": "1.40.1",

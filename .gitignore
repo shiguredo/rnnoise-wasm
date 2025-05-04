@@ -31,9 +31,7 @@ Thumbs.db
 dist
 
 # Ignore generated files by build.sh
-src/rnnoise.wasm
 src/rnnoise_wasm.js
-src/rnnoise_simd.wasm
 
 # Ignore generated docs
 apidoc/
