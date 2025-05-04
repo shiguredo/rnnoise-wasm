@@ -51,6 +51,7 @@ function build_rnnoise() {
     -s ALLOW_MEMORY_GROWTH=1 \
     -s MALLOC=emmalloc \
     -s SINGLE_FILE=1 \
+    -s ENVIRONMENT=web \
     -s MODULARIZE=1 \
     -s INCOMING_MODULE_JS_API=['locateFile'] \
     -s EXPORT_ES6=1 \

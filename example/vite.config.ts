@@ -21,6 +21,5 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['@shiguredo/rnnoise-wasm'],
   },
-  envDir: resolve(__dirname, '..'),
-  plugins: [wasm(), topLevelAwait()],
+  envDir: resolve(__dirname, '..')
 })
