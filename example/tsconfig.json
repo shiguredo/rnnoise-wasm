@@ -13,7 +13,8 @@
     "allowSyntheticDefaultImports": true,
     "newLine": "LF",
     "stripInternal": true,
-    "lib": ["ESNext", "dom"]
+    "lib": ["ESNext", "dom"],
+    "baseUrl": "."
   },
   "include": ["src"]
 }

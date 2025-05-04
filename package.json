@@ -1,17 +1,22 @@
 {
   "name": "@shiguredo/rnnoise-wasm",
-  "version": "2022.2.0",
+  "version": "2025.1.0",
   "description": "SIMD-accelerated WebAssembly build of RNNoise",
-  "main": "dist/rnnoise.mjs",
-  "module": "dist/rnnoise.mjs",
-  "types": "dist/rnnoise.d.ts",
   "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/rnnoise.d.ts",
+      "import": "./dist/rnnoise.js"
+    }
+  },
   "scripts": {
     "build": "vite build",
     "lint": "biome lint",
     "fmt": "biome format --write",
     "test": "vitest run",
-    "doc": "typedoc"
+    "doc": "typedoc",
+    "dev": "vite dev --config example/vite.config.ts",
+    "preview": "vite preview --config example/vite.config.ts"
   },
   "repository": {
     "type": "git",
@@ -34,7 +39,7 @@
     "@biomejs/biome": "1.9.4",
     "@types/emscripten": "1.40.1",
     "tslib": "2.8.1",
-    "typedoc": "0.28.3",
+    "typedoc": "0.28.4",
     "typescript": "5.8.3",
     "vite": "6.3.4",
     "vite-plugin-dts": "4.5.3",

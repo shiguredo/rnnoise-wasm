@@ -19,7 +19,7 @@ export default defineConfig({
   root: process.cwd(),
   build: {
     minify: 'esbuild',
-    target: 'es2022',
+    target: 'esnext',
     emptyOutDir: true,
     manifest: true,
     outDir: resolve(__dirname, './dist'),

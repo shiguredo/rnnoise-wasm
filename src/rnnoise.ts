@@ -1,6 +1,7 @@
 import { simd } from 'wasm-feature-detect'
-import loadRnnoiseModule from './rnnoise_wasm.js'
-import type * as rnnoise_wasm from './rnnoise_wasm.js'
+
+import loadRnnoiseModule from './rnnoise_wasm'
+import type * as rnnoise_wasm from './rnnoise_wasm'
 
 /**
  * {@link Rnnoise.load} 関数に指定可能なオプション
@@ -53,7 +54,9 @@ class Rnnoise {
       return loadRnnoiseModule({
         locateFile: (path, prefix) => {
           if (options.assetsPath !== undefined) {
-            prefix = options.assetsPath.endsWith('/') ? options.assetsPath : `${options.assetsPath}/`
+            prefix = options.assetsPath.endsWith('/')
+              ? options.assetsPath
+              : `${options.assetsPath}/`
           }
 
           if (options.wasmFileName !== undefined) {

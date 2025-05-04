@@ -1,3 +1,6 @@
+packages:
+  - .
+  - example
 onlyBuiltDependencies:
-  - '@biomejs/biome'
+  - "@biomejs/biome"
   - esbuild

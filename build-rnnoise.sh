@@ -50,26 +50,32 @@ function build_rnnoise() {
     -s STRICT=1 \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s MALLOC=emmalloc \
+    -s SINGLE_FILE=1 \
+    -s ENVIRONMENT=web \
     -s MODULARIZE=1 \
+    -s INCOMING_MODULE_JS_API=['locateFile'] \
     -s EXPORT_ES6=1 \
+    -s EXPORTED_RUNTIME_METHODS=HEAPF32 \
     -s EXPORTED_FUNCTIONS="['_rnnoise_process_frame', '_rnnoise_destroy', '_rnnoise_create', '_rnnoise_get_frame_size', '_rnnoise_model_from_string', '_rnnoise_model_free', '_malloc', '_free']" \
     .libs/librnnoise.a \
-    -o $NAME.js
+    -o $NAME.mjs
 
   cd $ROOT_DIR
 }
 
 # 通常版をビルド
-build_rnnoise "${OPTIMIZE}" "" "rnnoise"
+# build_rnnoise "${OPTIMIZE}" "" "rnnoise"
 
 # SIMD版をビルド
-build_rnnoise "${OPTIMIZE} -msimd128" "--enable-wasm-simd" "rnnoise_simd"
+# Chrome/Safari/Firefox では SIMD が有効になっているのでデフォルトでこちらを利用する
+# build_rnnoise "${OPTIMIZE} -msimd128" "--enable-wasm-simd" "rnnoise_simd"
+build_rnnoise "${OPTIMIZE} -msimd128" "--enable-wasm-simd" "rnnoise"
 
 # ビルド結果をコピー (JavaScriptファイルはSIMD対応・非対応のどちらでも同じなので使い回す）
-mkdir -p dist
-mv $BUILD_DIR/rnnoise/rnnoise/rnnoise.wasm dist/
-mv $BUILD_DIR/rnnoise/rnnoise/rnnoise.js src/rnnoise_wasm.js
-mv $BUILD_DIR/rnnoise_simd/rnnoise/rnnoise_simd.wasm dist/
+# mkdir -p dist
+# mv $BUILD_DIR/rnnoise/rnnoise/rnnoise.wasm dist/
+mv $BUILD_DIR/rnnoise/rnnoise/rnnoise.mjs src/rnnoise_wasm.js
+# mv $BUILD_DIR/rnnoise_simd/rnnoise/rnnoise_simd.wasm dist/
 
 # 一時ディレクトリを削除
 rm -rf $BUILD_DIR
