@@ -20,7 +20,7 @@ export default defineConfig({
   build: {
     minify: 'esbuild',
     target: 'esnext',
-    emptyOutDir: false,
+    emptyOutDir: true,
     manifest: true,
     outDir: resolve(__dirname, './dist'),
     lib: {
