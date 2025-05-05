@@ -11,11 +11,17 @@
 
 ## develop
 
+- [ADD] devtools を追加
+  - @voluntas
 - [CHANGE] Emscripten のバージョンを 4.0.8 にアップデートする
   - @voluntas
 
 ### misc
 
+- [ADD] playwright を追加
+  - @voluntas
+- [ADD] devtools の E2E テストを追加
+  - @voluntas
 - [CHANGE] npm から pnpm に変更する
   - @voluntas
 - [CHANGE] Rollup から Vite に変更する

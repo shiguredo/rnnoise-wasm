@@ -35,3 +35,7 @@ src/rnnoise_wasm.js
 
 # Ignore generated docs
 apidoc/
+
+# playwright
+playwright-report
+test-results

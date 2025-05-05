@@ -1,0 +1,36 @@
+name: e2e-test
+
+on:
+  push:
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+      - 'NOTICE'
+
+jobs:
+  e2e-test:
+    name: E2E Test
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 4.0.8
+      - run: emcc --version
+      - run: sudo apt install -y autoconf automake libtool
+      - run: ./build-rnnoise.sh
+
+      # [注意] setup-emsdkが古いnode/npmをインストールしてしまうので、
+      #        setup-nodeはその後に呼び出す必要がある。
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - run: node --version
+      - run: pnpm --version
+      - run: pnpm install
+      - run: pnpm run build
+      - run: pnpm run e2e-test
