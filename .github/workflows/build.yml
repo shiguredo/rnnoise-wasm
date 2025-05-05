@@ -60,6 +60,7 @@ jobs:
             dist/rnnoise.d.ts
             dist/rnnoise.js
           prerelease: ${{ contains(github.ref, 'canary') }}
+
   npm-publish-canary:
     name: Publish to npm
     runs-on: ubuntu-24.04
