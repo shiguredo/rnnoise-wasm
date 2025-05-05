@@ -1,5 +1,5 @@
 {
-  "name": "@shiguredo/rnnoise-wasm-example",
+  "name": "@shiguredo/rnnoise-wasm-devtools",
   "private": true,
   "scripts": {
     "build": "vite build",

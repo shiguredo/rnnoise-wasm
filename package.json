@@ -10,13 +10,13 @@
     }
   },
   "scripts": {
+    "dev": "vite dev --config devtools/vite.config.ts",
     "build": "vite build",
     "lint": "biome lint",
     "fmt": "biome format --write",
     "test": "vitest run",
-    "doc": "typedoc",
-    "dev": "vite dev --config example/vite.config.ts",
-    "preview": "vite preview --config example/vite.config.ts"
+    "e2e-test": "playwright test --config playwright.config.ts",
+    "doc": "typedoc"
   },
   "repository": {
     "type": "git",
@@ -37,7 +37,9 @@
   ],
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
+    "@playwright/test": "1.52.0",
     "@types/emscripten": "1.40.1",
+    "@types/node": "22.15.3",
     "tslib": "2.8.1",
     "typedoc": "0.28.4",
     "typescript": "5.8.3",

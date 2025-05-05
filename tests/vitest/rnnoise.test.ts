@@ -8,7 +8,7 @@ globalThis.require = createRequire(import.meta.url)
 
 import { expect, test } from 'vitest'
 
-import { Rnnoise } from '../dist/rnnoise'
+import { Rnnoise } from '../../dist/rnnoise'
 
 // FIXME: テストが失敗するので、一旦失敗前提にする
 test.fails('Create instance and process a frame (non SIMD)', async () => {
