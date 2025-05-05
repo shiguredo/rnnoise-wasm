@@ -11,6 +11,8 @@
   },
   "scripts": {
     "dev": "vite dev --config devtools/vite.config.ts",
+    "build:devtools": "vite build --config devtools/vite.config.ts",
+    "preview:devtools": "vite preview --config devtools/vite.config.ts",
     "build": "vite build",
     "lint": "biome lint",
     "fmt": "biome format --write",
