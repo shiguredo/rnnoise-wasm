@@ -57,6 +57,6 @@ jobs:
         with:
           files: |
             dist/rnnoise_wasm.d.ts
-            dist/rnnoise_wasm.js
+            dist/rnnoise.d.ts
             dist/rnnoise.js
           prerelease: ${{ contains(github.ref, 'canary') }}
