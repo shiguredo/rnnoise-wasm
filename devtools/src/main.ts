@@ -291,10 +291,13 @@ function processLoop() {
 
   // Draw waveforms
   if (originalCanvasCtx && originalCanvas) {
-    drawWaveformFrame(originalCanvasCtx, originalCanvas, audioBufferOriginal)
+    // Original waveform remains black
+    drawWaveformFrame(originalCanvasCtx, originalCanvas, audioBufferOriginal, 'black')
   }
   if (processedCanvasCtx && processedCanvas) {
-    drawWaveformFrame(processedCanvasCtx, processedCanvas, audioBufferProcessed)
+    // Processed waveform color depends on denoise state
+    const processedColor = isDenoisingEnabled ? 'blue' : 'red'
+    drawWaveformFrame(processedCanvasCtx, processedCanvas, audioBufferProcessed, processedColor)
   }
 
   requestAnimationFrameId = requestAnimationFrame(processLoop)
@@ -336,6 +339,7 @@ function drawWaveformFrame(
   ctx: CanvasRenderingContext2D,
   canvas: HTMLCanvasElement,
   data: Float32Array,
+  color: string,
 ) {
   const width = canvas.width
   const height = canvas.height
@@ -344,7 +348,7 @@ function drawWaveformFrame(
 
   ctx.fillStyle = 'white'
   ctx.fillRect(0, 0, width, height)
-  ctx.strokeStyle = 'black'
+  ctx.strokeStyle = color
   ctx.lineWidth = 1
   ctx.beginPath()
 
