@@ -32,10 +32,15 @@ jobs:
       - run: pnpm install
       - run: pnpm run build
       - run: pnpm run build:devtools
+      - name: copy
+        run: |
+          mkdir -p ./output/devtools
+          cp -r ./devtools/dist/* ./output/devtools
+          cp -r ./devtools/dist/assets ./output/devtools/assets
       - name: Upload files
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./devtools/dist
+          path: ./output
 
   deploy:
     needs: build
