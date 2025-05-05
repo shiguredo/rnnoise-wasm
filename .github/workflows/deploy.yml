@@ -1,0 +1,52 @@
+name: GitHub Pages Deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["develop"]
+
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 4.0.8
+      - run: emcc --version
+      - run: sudo apt install -y autoconf automake
+      - run: ./build-rnnoise.sh
+
+      # [注意] setup-emsdkが古いnode/npmをインストールしてしまうので、
+      #        setup-nodeはその後に呼び出す必要がある。
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - run: node --version
+      - run: pnpm --version
+      - run: pnpm install
+      - run: pnpm run build
+      - run: pnpm run build:devtools
+      - name: Upload files
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./devtools/dist
+
+  deploy:
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
