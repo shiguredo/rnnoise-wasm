@@ -15,8 +15,8 @@
     "fmt": "biome format --write",
     "test": "vitest run",
     "doc": "typedoc",
-    "dev": "vite dev --config example/vite.config.ts",
-    "preview": "vite preview --config example/vite.config.ts"
+    "dev": "vite dev --config examples/vite.config.ts",
+    "preview": "vite preview --config examples/vite.config.ts"
   },
   "repository": {
     "type": "git",
