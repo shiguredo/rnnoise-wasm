@@ -10,14 +10,12 @@
     }
   },
   "scripts": {
+    "dev": "vite dev --config devtools/vite.config.ts",
     "build": "vite build",
     "lint": "biome lint",
     "fmt": "biome format --write",
     "test": "vitest run",
-    "doc": "typedoc",
-    "dev": "vite dev --config examples/vite.config.ts",
-    "preview": "vite preview --config examples/vite.config.ts",
-    "e2e-dev": "vite dev --config e2e-tests/vite.config.ts"
+    "doc": "typedoc"
   },
   "repository": {
     "type": "git",
