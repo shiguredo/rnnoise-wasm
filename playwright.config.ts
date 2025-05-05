@@ -3,8 +3,7 @@ import { defineConfig, devices } from '@playwright/test'
 
 export default defineConfig({
   workers: 1,
-  testDir: 'tests',
-  testIgnore: '**/rnnoise.test.ts',
+  testDir: 'tests/playwright',
   reporter: 'html',
   projects: [
     {
