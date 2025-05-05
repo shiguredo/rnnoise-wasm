@@ -11,9 +11,12 @@
 
 ## develop
 
-- [ADD] devtools を追加
+- [ADD] 開発支援ツールとして DevTools を追加
+  - `pnpm run dev` で起動
   - @voluntas
-- [CHANGE] Emscripten のバージョンを 4.0.8 にアップデートする
+- [CHANGE] `Emscripten` のバージョンを 4.0.8 にアップデートする
+  - @voluntas
+- [CHANGE] SIMD 版の RNNoise をデフォルトで使用するように変更
   - @voluntas
 
 ### misc
