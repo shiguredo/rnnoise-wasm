@@ -54,5 +54,8 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/*
+          files: |
+            dist/rnnoise_wasm.d.ts
+            dist/rnnoise_wasm.js
+            dist/rnnoise.js
           prerelease: ${{ contains(github.ref, 'canary') }}
