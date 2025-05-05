@@ -20,14 +20,14 @@ def update_version(file_path: str, dry_run: bool) -> Optional[str]:
     if "-canary." in current_version:
         new_content, count = re.subn(
             r'("version"\s*:\s*")(\d+\.\d+\.\d+-canary\.)(\d+)',
-            lambda m: f"{m.group(1)!r}{m.group(2)!r}{int(m.group(3)) + 1}",
+            lambda m: f"{m.group(1)}{m.group(2)}{int(m.group(3)) + 1}",
             content,
         )
     else:
         # -canary.X がない場合、次のマイナーバージョンにして -canary.0 を追加
         new_content, count = re.subn(
             r'("version"\s*:\s*")(\d+)\.(\d+)\.(\d+)',
-            lambda m: f"{m.group(1)!r}{m.group(2)!r}.{int(m.group(3)) + 1}.0-canary.0",
+            lambda m: f"{m.group(1)}{m.group(2)}.{int(m.group(3)) + 1}.0-canary.0",
             content,
         )
 
