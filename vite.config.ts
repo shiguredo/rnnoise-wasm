@@ -21,7 +21,7 @@ export default defineConfig({
     minify: 'esbuild',
     target: 'esnext',
     emptyOutDir: true,
-    manifest: true,
+    manifest: false,
     outDir: resolve(__dirname, './dist'),
     lib: {
       entry: resolve(__dirname, 'src/rnnoise.ts'),
