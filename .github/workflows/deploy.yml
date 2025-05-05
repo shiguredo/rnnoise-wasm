@@ -3,7 +3,7 @@ name: GitHub Pages Deploy
 on:
   workflow_dispatch:
   push:
-    branches: ["develop", "feature/deploy"]
+    branches: ["develop"]
 
 
 jobs:
