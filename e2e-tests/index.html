@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RNNoise WASM E2E Test</title>
+</head>
+
+<body>
+  <h1>RNNoise WASM E2E Test</h1>
+  <div style="display: flex; gap: 10px;">
+    <div>
+      <h2>Original Noise</h2>
+      <canvas id="original-waveform" width="400" height="100" style="border: 1px solid black;"></canvas>
+    </div>
+    <div>
+      <h2>Processed / Output</h2>
+      <canvas id="processed-waveform" width="400" height="100" style="border: 1px solid black;"></canvas>
+    </div>
+  </div>
+
+  <!-- Simplified Controls -->
+  <div style="margin-top: 10px;">
+    <button id="toggleGenerateButton">Start Generating</button>
+    <button id="toggleDenoiseButton" disabled>Enable Denoise</button> <!-- Disabled until generation starts -->
+    <button id="togglePlaybackButton" disabled>Start Playback</button> <!-- Disabled until generation starts -->
+  </div>
+
+  <script type="module" src="./src/main.ts"></script>
+</body>
+
+</html>

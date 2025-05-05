@@ -36,7 +36,13 @@ importers:
         specifier: 1.8.0
         version: 1.8.0
 
-  example:
+  e2e-tests:
+    dependencies:
+      '@shiguredo/rnnoise-wasm':
+        specifier: workspace:*
+        version: link:..
+
+  examples:
     dependencies:
       '@shiguredo/rnnoise-wasm':
         specifier: workspace:*

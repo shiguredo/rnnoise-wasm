@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "ESNext",
+    "strict": true,
+    "outDir": "dist",
+    "moduleResolution": "Bundler",
+    "declaration": true,
+    "strictNullChecks": true,
+    "importHelpers": true,
+    "experimentalDecorators": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "newLine": "LF",
+    "stripInternal": true,
+    "lib": ["ESNext", "dom"],
+    "baseUrl": "."
+  },
+  "include": ["src"]
+}
