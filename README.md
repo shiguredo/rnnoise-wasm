@@ -50,6 +50,27 @@ Rnnoise.load().then((rnnoise) => {
 });
 ```
 
+## ビルド方法
+
+Ubuntu 24.04 か macOS 15 でのビルドを確認しています。
+
+- [Emscripten SDK](https://github.com/emscripten-core/emsdk)
+  - 4.0.8
+- Ubuntu 24.04: `sudo apt install -y autoconf automake libtool`
+- macOS 15: `brew install autoconf automake libtool`
+
+```bash
+./build-rnnoise.sh
+```
+
+```bash
+pnpm install
+pnpm build
+pnpm dev
+```
+
+<http://localhost:5173/> にアクセスして、RNNoise の動作を確認できます。
+
 ## ライセンス
 
 [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)
