@@ -71,6 +71,10 @@ jobs:
       id-token: write
     if: ${{ contains(github.ref, 'canary') }}
     steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
       - name: Download Artifact
         uses: actions/download-artifact@v4
         with:
