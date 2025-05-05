@@ -60,3 +60,24 @@ jobs:
             dist/rnnoise.d.ts
             dist/rnnoise.js
           prerelease: ${{ contains(github.ref, 'canary') }}
+  npm-publish-canary:
+    name: Publish to npm
+    runs-on: ubuntu-24.04
+    needs:
+      - create-release
+    permissions:
+      contents: read
+      id-token: write
+    if: ${{ contains(github.ref, 'canary') }}
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: rnnoise-wasm-dist
+          path: dist/
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - run: pnpm publish --provenance --no-git-checks --tag canary
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }} 
