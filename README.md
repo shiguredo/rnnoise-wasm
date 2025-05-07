@@ -54,7 +54,7 @@ Rnnoise.load().then((rnnoise) => {
 
 <https://shiguredo.github.io/rnnoise-wasm/devtools/>
 
-[![Image from Gyazo](https://i.gyazo.com/889c30ecf6edbc5ff4f9849f870da9c0.png)](https://gyazo.com/889c30ecf6edbc5ff4f9849f870da9c0)
+[![Image from Gyazo](https://i.gyazo.com/18297a8820f23f17e230619437256e71.png)](https://gyazo.com/18297a8820f23f17e230619437256e71)
 
 ## ビルド方法
 
