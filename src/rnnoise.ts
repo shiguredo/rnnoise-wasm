@@ -67,7 +67,7 @@ class DenoiseState {
     this.rnnoiseModule = rnnoiseModule
 
     this.frameSize = this.rnnoiseModule._rnnoise_get_frame_size()
-    let state = this.rnnoiseModule._rnnoise_create()
+    const state = this.rnnoiseModule._rnnoise_create()
 
     const pcmInputBuf = this.rnnoiseModule._malloc(this.frameSize * F32_BYTE_SIZE)
     const pcmOutputBuf = this.rnnoiseModule._malloc(this.frameSize * F32_BYTE_SIZE)
