@@ -2,25 +2,6 @@ import loadRnnoiseModule from './rnnoise_wasm'
 import type * as rnnoise_wasm from './rnnoise_wasm'
 
 /**
- * {@link Rnnoise.load} 関数に指定可能なオプション
- */
-interface RnnoiseOptions {
-  /**
-   * wasm ファイルの配置先ディレクトリパス
-   *
-   * デフォルトでは `rnnoise.js` の配置先と同じディレクトリが使用されます
-   */
-  assetsPath?: string
-
-  /**
-   * @internal
-   *
-   * 使用する wasm ファイルの名前（テスト用オプション）
-   */
-  wasmFileName?: string
-}
-
-/**
  * WebAssembly 用にビルドした [RNNoise](https://github.com/shiguredo/rnnoise) の API を提供するためのクラス
  *
  * インスタンスを作成するためには {@link Rnnoise.load} 関数を使用してください
@@ -41,13 +22,12 @@ class Rnnoise {
   /**
    * wasm ファイルをロードして {@link Rnnoise} のインスタンスを生成する関数
    *
-   * @param options 指定可能なオプション群
    * @returns 生成された {@link Rnnoise} インスタンス
    *
    * @remarks
    * 実行環境が WebAssembly の SIMD に対応している場合には、SIMD 版の wasm ファイルがロードされます
    */
-  static async load(_options: RnnoiseOptions = {}): Promise<Rnnoise> {
+  static async load(): Promise<Rnnoise> {
     const rnnoiseModule = await loadRnnoiseModule();
     return new Rnnoise(rnnoiseModule)
   }
@@ -157,4 +137,4 @@ class DenoiseState {
   }
 }
 
-export { Rnnoise, type RnnoiseOptions, DenoiseState }
+export { Rnnoise, DenoiseState }
