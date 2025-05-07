@@ -638,9 +638,9 @@ function updateButtonLabelsAndState() {
   autoNoiseRadioButton.disabled = isGenerating
   micInputRadioButton.disabled = isGenerating
 
-  // Disable noise parameter sliders if mic input is selected
-  noiseScaleSlider.disabled = isGenerating || isMicMode
-  noiseAlphaSlider.disabled = isGenerating || isMicMode
+  // Disable noise parameter sliders only if mic input is selected
+  noiseScaleSlider.disabled = isMicMode
+  noiseAlphaSlider.disabled = isMicMode
 }
 
 function drawWaveformFrame(

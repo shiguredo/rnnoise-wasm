@@ -14,7 +14,7 @@
   </h2>
   <div style="display: flex; gap: 10px;">
     <div>
-      <h2>Original Audio Source</h2>
+      <h2>Audio Source</h2>
       <canvas id="original-waveform" width="400" height="100" style="border: 1px solid black;"></canvas>
     </div>
     <div>
@@ -31,7 +31,8 @@
   </div>
 
   <div style="margin-top: 10px;">
-    <fieldset>
+    <fieldset
+      style="width: calc(800px + 10px - 12px); /* canvas_width*2 + gap - fieldset_padding*2 (approx) */ padding: 5px;">
       <legend>Audio Input Source:</legend>
       <div>
         <input type="radio" id="autoNoise" name="noiseSource" value="auto" checked>
