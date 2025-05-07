@@ -11,7 +11,9 @@
 
 ## develop
 
-- [ADD] 開発支援ツールとして DevTools を追加
+- [ADD] DevTools に getUserMedia でのマイク音声入力を追加する
+  - @voluntas
+- [ADD] 開発支援ツールとして DevTools を追加する
   - `pnpm run dev` で起動
   - @voluntas
 - [CHANGE] `Emscripten` のバージョンを 4.0.8 にアップデートする
