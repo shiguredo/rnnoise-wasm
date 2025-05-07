@@ -11,8 +11,6 @@ export interface RnnoiseModule extends EmscriptenModule {
   _rnnoise_destroy(state: DenoiseState): void
 
   _rnnoise_get_frame_size(): number
-
-  _rnnoise_model_free(mode: RNNModel): void
 }
 
 export default function loadRnnoiseModule(): Promise<RnnoiseModule>
