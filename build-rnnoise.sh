@@ -45,13 +45,16 @@ function build_rnnoise() {
   emconfigure ./configure --enable-shared=no $CONFIGURE_FLAGS
   emmake make
 
-  # TODO(sile): STACK_SIZE の値は仮ぎめ
+  # [NOTE]
+  # STACK_SIZE のデフォルト値は 64 KB だけど、これだと実行時に
+  # メモリエラーが出たので大きめの値を指定している。
+  # 試した範囲では 70 KB ではエラーとなり、80 KB では大丈夫だった。
   emcc \
     -s STRICT=1 \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s MALLOC=emmalloc \
     -s SINGLE_FILE=1 \
-    -s STACK_SIZE=10MB \
+    -s STACK_SIZE=200KB \
     -s ENVIRONMENT=web \
     -s MODULARIZE=1 \
     -s EXPORT_ES6=1 \
