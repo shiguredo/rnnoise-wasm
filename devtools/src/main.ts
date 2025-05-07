@@ -367,17 +367,13 @@ async function startMicInput() {
   // Actually, we might not want to connect micScriptProcessor to destination if it's just for processing.
   // The playback scriptProcessor handles the actual output. Let's disconnect it from destination.
   micScriptProcessor.disconnect(audioContext.destination) // Correction: Don't send raw mic to output here.
-  // The ScriptProcessorNode needs to be connected to *something* to trigger onaudioprocess.
-  // A common practice is to connect it to a GainNode that is then connected to destination,
-  // and set the gain to 0 if you don't want to hear the direct input from this processor.
-  // Or, in modern AudioWorklets, this is handled differently.
-  // For ScriptProcessorNode, it must be connected to the destination to keep running.
-  // So, let's keep it connected, but its output buffer in onaudioprocess can be zeroed out if needed.
-  // However, the spec says:
-  // "The node is active as long as it is connected to an output."
-  // If we connect it to another node (like the playback scriptProcessor's input), that should suffice.
-  // But we are not directly connecting micScriptProcessor to the playback one.
-  // Let's try connecting to a dummy GainNode then to destination, with gain 0.
+  // The ScriptProcessorNode needs to be connected to *something* to keep the onaudioprocess event firing.
+  // This is a requirement of the Web Audio API: a node remains active only as long as it is connected to an output.
+  // However, we do not want the raw microphone input to be audible, so we cannot connect it directly to the destination.
+  // Instead, we use a dummy GainNode with its gain set to 0. This ensures that the processor remains active
+  // without producing any audible output. This is a common workaround when using ScriptProcessorNode.
+  // Note: In modern implementations, AudioWorklets provide a more flexible and efficient way to handle such cases.
+  // For now, this approach ensures compatibility and maintains the processor's activity for further processing.
   const dummyGain = audioContext.createGain()
   dummyGain.gain.value = 0
   micScriptProcessor.connect(dummyGain)
