@@ -1,5 +1,3 @@
-import { simd } from 'wasm-feature-detect'
-
 import loadRnnoiseModule from './rnnoise_wasm'
 import type * as rnnoise_wasm from './rnnoise_wasm'
 
@@ -50,11 +48,8 @@ class Rnnoise {
    * 実行環境が WebAssembly の SIMD に対応している場合には、SIMD 版の wasm ファイルがロードされます
    */
   static async load(_options: RnnoiseOptions = {}): Promise<Rnnoise> {
-    const rnnoiseModule = await simd().then((_isSupported) => {
-      return loadRnnoiseModule()
-    })
-
-    return Promise.resolve(new Rnnoise(rnnoiseModule))
+    const rnnoiseModule = await loadRnnoiseModule();
+    return new Rnnoise(rnnoiseModule)
   }
 
   /**
