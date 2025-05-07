@@ -4,7 +4,7 @@ set -eux
 # 各種設定
 EMSCRIPTEN_VERSION=4.0.8
 RNNOISE_REPOSITORY=https://github.com/xiph/rnnoise
-RNNOISE_VERSION=master # TODO
+RNNOISE_VERSION=70f1d256acd4b34a572f999a05c87bf00b67730d
 OPTIMIZE="-O2"
 
 # Emscriptenのバージョンチェック
