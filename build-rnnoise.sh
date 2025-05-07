@@ -45,6 +45,7 @@ function build_rnnoise() {
   emconfigure ./configure --enable-shared=no $CONFIGURE_FLAGS
   emmake make
 
+  # TODO(sile): STACK_SIZE の値は仮ぎめ
   emcc \
     -s STRICT=1 \
     -s ALLOW_MEMORY_GROWTH=1 \
@@ -53,7 +54,6 @@ function build_rnnoise() {
     -s STACK_SIZE=10MB \
     -s ENVIRONMENT=web \
     -s MODULARIZE=1 \
-    -s INCOMING_MODULE_JS_API=['locateFile'] \
     -s EXPORT_ES6=1 \
     -s EXPORTED_RUNTIME_METHODS=HEAPF32 \
     -s EXPORTED_FUNCTIONS="['_rnnoise_process_frame', '_rnnoise_destroy', '_rnnoise_create', '_rnnoise_get_frame_size', '_rnnoise_model_free', '_malloc', '_free']" \

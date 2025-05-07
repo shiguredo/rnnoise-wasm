@@ -15,10 +15,4 @@ export interface RnnoiseModule extends EmscriptenModule {
   _rnnoise_model_free(mode: RNNModel): void
 }
 
-export interface LoadRnnoiseModuleOptions {
-  locateFile?: (path: string, prefix: string) => string
-}
-
-export default function loadRnnoiseModule(
-  options?: LoadRnnoiseModuleOptions,
-): Promise<RnnoiseModule>
+export default function loadRnnoiseModule(): Promise<RnnoiseModule>

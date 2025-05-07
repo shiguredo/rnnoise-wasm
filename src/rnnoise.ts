@@ -49,29 +49,9 @@ class Rnnoise {
    * @remarks
    * 実行環境が WebAssembly の SIMD に対応している場合には、SIMD 版の wasm ファイルがロードされます
    */
-  static async load(options: RnnoiseOptions = {}): Promise<Rnnoise> {
-    const rnnoiseModule = await simd().then((isSupported) => {
-      return loadRnnoiseModule({
-        locateFile: (path, prefix) => {
-          if (options.assetsPath !== undefined) {
-            prefix = options.assetsPath.endsWith('/')
-              ? options.assetsPath
-              : `${options.assetsPath}/`
-          }
-
-          if (options.wasmFileName !== undefined) {
-            path = options.wasmFileName
-            console.debug('Loads rnnoise-wasm: ', prefix + path)
-          } else if (isSupported) {
-            path = 'rnnoise_simd.wasm'
-            console.debug('Loads rnnoise-wasm (SIMD ver): ', prefix + path)
-          } else {
-            console.debug('Loads rnnoise-wasm (non SIMD ver): ', prefix + path)
-          }
-
-          return prefix + path
-        },
-      })
+  static async load(_options: RnnoiseOptions = {}): Promise<Rnnoise> {
+    const rnnoiseModule = await simd().then((_isSupported) => {
+      return loadRnnoiseModule()
     })
 
     return Promise.resolve(new Rnnoise(rnnoiseModule))
