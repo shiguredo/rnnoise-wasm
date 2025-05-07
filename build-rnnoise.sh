@@ -51,6 +51,8 @@ function build_rnnoise() {
     -s ALLOW_MEMORY_GROWTH=1 \
     -s MALLOC=emmalloc \
     -s SINGLE_FILE=1 \
+    -s INITIAL_MEMORY=100MB \
+    -s STACK_SIZE=10MB \
     -s ENVIRONMENT=web \
     -s MODULARIZE=1 \
     -s INCOMING_MODULE_JS_API=['locateFile'] \
@@ -64,12 +66,12 @@ function build_rnnoise() {
 }
 
 # 通常版をビルド
-# build_rnnoise "${OPTIMIZE}" "" "rnnoise"
+build_rnnoise "${OPTIMIZE}" "" "rnnoise"
 
 # SIMD版をビルド
 # Chrome/Safari/Firefox では SIMD が有効になっているのでデフォルトでこちらを利用する
 # build_rnnoise "${OPTIMIZE} -msimd128" "--enable-wasm-simd" "rnnoise_simd"
-build_rnnoise "${OPTIMIZE} -msimd128" "--enable-wasm-simd" "rnnoise"
+# build_rnnoise "${OPTIMIZE} -msimd128" "--enable-wasm-simd" "rnnoise"
 
 # ビルド結果をコピー (JavaScriptファイルはSIMD対応・非対応のどちらでも同じなので使い回す）
 # mkdir -p dist
