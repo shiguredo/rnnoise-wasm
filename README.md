@@ -4,8 +4,7 @@
 [![npm version](https://badge.fury.io/js/@shiguredo%2Frnnoise-wasm.svg)](https://badge.fury.io/js/@shiguredo%2Frnnoise-wasm)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-[RNNoise](https://github.com/shiguredo/rnnoise) を WebAssembly (wasm) にビルドして
-JavaScript や TypeScript から利用するためのライブラリです。
+[RNNoise](https://github.com/xiph/rnnoise) を WebAssembly (Wasm) にビルドしてブラウザで利用するライブラリです。
 
 ## About Shiguredo's open source software
 
@@ -96,4 +95,4 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
-生成された wasm ファイルのライセンスについては [rnnoise/COPYING](https://github.com/shiguredo/rnnoise) を参照してください。
+生成された wasm ファイルのライセンスについては [rnnoise/COPYING](https://github.com/xiph/rnnoise) を参照してください。
