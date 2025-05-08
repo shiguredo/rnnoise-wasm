@@ -11,6 +11,11 @@
 
 ## develop
 
+## 2025.1.1
+
+- [FIX] npm publish が正常に行えなかったので再リリース
+  - @voluntas
+
 ## 2025.1.0
 
 - [UPDATE] RNNoise を v0.2 系に更新する
