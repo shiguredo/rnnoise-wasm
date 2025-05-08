@@ -10,6 +10,9 @@ on:
 jobs:
   e2e-test:
     name: E2E Test
+    strategy:
+      matrix:
+        node: ['20', '22', '24']
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -24,8 +27,7 @@ jobs:
       #        setup-nodeはその後に呼び出す必要がある。
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-
+          node-version: ${{ matrix.node }}
       - uses: pnpm/action-setup@v4
         with:
           version: 10
