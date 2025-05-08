@@ -49,6 +49,9 @@ let noiseAlphaSlider: HTMLInputElement | null = null
 let noiseAlphaValueSpan: HTMLSpanElement | null = null
 let autoNoiseRadioButton: HTMLInputElement | null = null
 let micInputRadioButton: HTMLInputElement | null = null
+let echoCancellationCheckbox: HTMLInputElement | null = null
+let noiseSuppressionCheckbox: HTMLInputElement | null = null
+let autoGainControlCheckbox: HTMLInputElement | null = null
 
 async function init() {
   originalCanvas = document.getElementById('original-waveform') as HTMLCanvasElement
@@ -70,6 +73,10 @@ async function init() {
   autoNoiseRadioButton = document.getElementById('autoNoise') as HTMLInputElement
   micInputRadioButton = document.getElementById('micInput') as HTMLInputElement
 
+  echoCancellationCheckbox = document.getElementById('echoCancellationCheckbox') as HTMLInputElement
+  noiseSuppressionCheckbox = document.getElementById('noiseSuppressionCheckbox') as HTMLInputElement
+  autoGainControlCheckbox = document.getElementById('autoGainControlCheckbox') as HTMLInputElement
+
   if (
     !generateButton ||
     !denoiseButton ||
@@ -79,7 +86,10 @@ async function init() {
     !noiseAlphaSlider ||
     !noiseAlphaValueSpan ||
     !autoNoiseRadioButton ||
-    !micInputRadioButton
+    !micInputRadioButton ||
+    !echoCancellationCheckbox ||
+    !noiseSuppressionCheckbox ||
+    !autoGainControlCheckbox
   ) {
     console.error('Control elements not found!')
     alert('Initialization failed: Control elements missing.')
@@ -90,6 +100,11 @@ async function init() {
     if (noiseAlphaSlider) noiseAlphaSlider.disabled = true
     return
   }
+
+  // デフォルト値を設定
+  echoCancellationCheckbox.checked = true // デフォルト有効
+  noiseSuppressionCheckbox.checked = false // デフォルト無効のまま
+  autoGainControlCheckbox.checked = true // デフォルト有効
 
   try {
     rnnoise = await Rnnoise.load()
@@ -287,9 +302,9 @@ async function startMicInput() {
       audio: {
         sampleRate: 48000, // Request 48kHz
         channelCount: 1,
-        echoCancellation: false, // Recommended for RNNoise
-        noiseSuppression: false, // Recommended for RNNoise
-        autoGainControl: false, // Recommended for RNNoise
+        echoCancellation: echoCancellationCheckbox?.checked ?? false,
+        noiseSuppression: noiseSuppressionCheckbox?.checked ?? false,
+        autoGainControl: autoGainControlCheckbox?.checked ?? false,
       },
       video: false,
     })
@@ -642,7 +657,10 @@ function updateButtonLabelsAndState() {
     !noiseScaleSlider ||
     !noiseAlphaSlider ||
     !autoNoiseRadioButton ||
-    !micInputRadioButton
+    !micInputRadioButton ||
+    !echoCancellationCheckbox ||
+    !noiseSuppressionCheckbox ||
+    !autoGainControlCheckbox
   )
     return
 
@@ -660,6 +678,11 @@ function updateButtonLabelsAndState() {
   // Disable noise type selection while generating
   autoNoiseRadioButton.disabled = isGenerating
   micInputRadioButton.disabled = isGenerating
+
+  // Disable microphone settings checkboxes while generating
+  echoCancellationCheckbox.disabled = isGenerating
+  noiseSuppressionCheckbox.disabled = isGenerating
+  autoGainControlCheckbox.disabled = isGenerating
 
   // Disable noise parameter sliders only if mic input is selected
   noiseScaleSlider.disabled = isMicMode

@@ -54,6 +54,21 @@
       <div>
         <input type="radio" id="micInput" name="noiseSource" value="mic">
         <label for="micInput">Microphone Input</label>
+        <div style="padding-left: 20px; margin-top: 5px;">
+          <p style="margin-bottom: 3px; margin-top: 5px; font-weight: bold;">Microphone Settings (Apply on Start):</p>
+          <div>
+            <input type="checkbox" id="echoCancellationCheckbox">
+            <label for="echoCancellationCheckbox">Enable Echo Cancellation</label>
+          </div>
+          <div>
+            <input type="checkbox" id="noiseSuppressionCheckbox">
+            <label for="noiseSuppressionCheckbox">Enable Noise Suppression</label>
+          </div>
+          <div>
+            <input type="checkbox" id="autoGainControlCheckbox">
+            <label for="autoGainControlCheckbox">Enable Auto Gain Control</label>
+          </div>
+        </div>
       </div>
     </fieldset>
   </div>
