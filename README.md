@@ -24,7 +24,7 @@ Please read <https://github.com/shiguredo/oss/blob/master/README.en.md> before u
 ```console
 $ npm install --save @shiguredo/rnnoise-wasm
 $ npm ls
-└── @shiguredo/rnnoise-wasm@2022.2.0
+└── @shiguredo/rnnoise-wasm@2025.1.1
 ```
 
 TypeScript での使用方法は次のようになります:
@@ -52,7 +52,7 @@ Rnnoise.load().then((rnnoise) => {
 
 <https://shiguredo.github.io/rnnoise-wasm/devtools/>
 
-[![Image from Gyazo](https://i.gyazo.com/18297a8820f23f17e230619437256e71.png)](https://gyazo.com/18297a8820f23f17e230619437256e71)
+[![Image from Gyazo](https://i.gyazo.com/c6e24a593085de4780d0835edda63e23.png)](https://gyazo.com/c6e24a593085de4780d0835edda63e23)
 
 ## ビルド方法
 
