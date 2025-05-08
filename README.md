@@ -7,8 +7,6 @@
 [RNNoise](https://github.com/shiguredo/rnnoise) を WebAssembly (wasm) にビルドして
 JavaScript や TypeScript から利用するためのライブラリです。
 
-WebAssembly の SIMD に対応しているブラウザでは、自動的に SIMD版 の wasm ビルドが使用されます。
-
 ## About Shiguredo's open source software
 
 We will not respond to PRs or issues that have not been discussed on Discord. Also, Discord is only available in Japanese.
