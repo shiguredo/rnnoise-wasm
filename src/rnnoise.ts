@@ -23,9 +23,6 @@ class Rnnoise {
    * wasm ファイルをロードして {@link Rnnoise} のインスタンスを生成する関数
    *
    * @returns 生成された {@link Rnnoise} インスタンス
-   *
-   * @remarks
-   * 実行環境が WebAssembly の SIMD に対応している場合には、SIMD 版の wasm ファイルがロードされます
    */
   static async load(): Promise<Rnnoise> {
     const rnnoiseModule = await loadRnnoiseModule();
