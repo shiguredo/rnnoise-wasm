@@ -102,9 +102,9 @@ async function init() {
   }
 
   // デフォルト値を設定
-  echoCancellationCheckbox.checked = true // デフォルト有効
-  noiseSuppressionCheckbox.checked = false // デフォルト無効のまま
-  autoGainControlCheckbox.checked = true // デフォルト有効
+  echoCancellationCheckbox.checked = false // デフォルト無効
+  noiseSuppressionCheckbox.checked = false // デフォルト無効
+  autoGainControlCheckbox.checked = false // デフォルト無効
 
   try {
     rnnoise = await Rnnoise.load()
