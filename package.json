@@ -1,6 +1,6 @@
 {
   "name": "@shiguredo/rnnoise-wasm",
-  "version": "2025.1.0-canary.11",
+  "version": "2025.1.0-canary.12",
   "description": "WebAssembly build of RNNoise",
   "type": "module",
   "exports": {
