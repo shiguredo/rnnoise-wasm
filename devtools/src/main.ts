@@ -1,8 +1,8 @@
 import { type DenoiseState, Rnnoise } from '@shiguredo/rnnoise-wasm'
 
-const SCRIPT_PROCESSOR_BUFFER_SIZE = 4096
+const SCRIPT_PROCESSOR_BUFFER_SIZE = 1024
 const INT16_MAX_VALUE = 0x7fff
-const MIC_SCRIPT_PROCESSOR_BUFFER_SIZE = 1024 // 2のべき乗かつ frameSize (480) より大きい値
+const MIC_SCRIPT_PROCESSOR_BUFFER_SIZE = 512
 
 // --- State Variables ---
 let isGenerating = false
@@ -260,17 +260,15 @@ function stopGenerating() {
 }
 
 async function startMicInput() {
-  if (!rnnoise) {
-    console.error('[startMicInput] RNNoise not loaded.')
-    throw new Error('RNNoise not loaded.')
-  }
   if (micStream) {
-    console.warn('[startMicInput] Microphone stream already active.')
+    console.warn('[startMicInput] Microphone input already active.')
     return
   }
 
   if (!audioContext || audioContext.state === 'closed') {
-    audioContext = new AudioContext({ sampleRate: 48000 })
+    // latencyHint に 'interactive' を指定して低遅延を試みる
+    // 数値を直接指定することも可能 (例: 0.01 for 10ms)
+    audioContext = new AudioContext({ sampleRate: 48000, latencyHint: 'interactive' })
     console.log('[startMicInput] AudioContext created/reopened. State:', audioContext.state)
   }
   if (audioContext.state === 'suspended') {
@@ -427,7 +425,8 @@ function startAudioPlayback() {
   isPlaying = true
 
   if (!audioContext || audioContext.state === 'closed') {
-    audioContext = new AudioContext({ sampleRate: 48000 })
+    // latencyHint に 'interactive' を指定して低遅延を試みる
+    audioContext = new AudioContext({ sampleRate: 48000, latencyHint: 'interactive' })
     console.log('[startAudioPlayback] AudioContext created. State:', audioContext.state)
   }
   if (audioContext.state === 'suspended') {
