@@ -3,7 +3,7 @@ import { defineConfig, devices } from '@playwright/test'
 
 export default defineConfig({
   workers: 1,
-  testDir: 'tests/playwright',
+  testDir: 'tests',
   reporter: 'html',
   projects: [
     {
