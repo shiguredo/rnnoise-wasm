@@ -67,10 +67,10 @@ function build_rnnoise() {
 }
 
 # ビルド
-build_rnnoise "${OPTIMIZE}" "" "rnnoise"
+build_rnnoise "${OPTIMIZE}" ""
 
 # TODO: SIMD に対応する際のコマンド
-# build_rnnoise "${OPTIMIZE} -msimd128" "--enable-x86-rtcd " "rnnoise"
+# build_rnnoise "${OPTIMIZE} -msimd128" "--enable-x86-rtcd "
 
 # ビルド結果をコピー
 mv $BUILD_DIR/rnnoise/rnnoise/rnnoise.mjs src/rnnoise_wasm.js
