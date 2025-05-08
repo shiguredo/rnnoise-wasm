@@ -2,18 +2,15 @@
 
 [RNNoise](https://github.com/shiguredo/rnnoise)をwasmにビルドして、TypeScriptから利用するためのライブラリです。
 
-WebAssemblyのSIMDに対応しているブラウザでは、自動的にSIMD版のwasmビルドが使用されます。
-
 ## About Shiguredo's open source software
 
 We will not respond to PRs or issues that have not been discussed on Discord. Also, Discord is only available in Japanese.
 
-Please read https://github.com/shiguredo/oss/blob/master/README.en.md before use.
+Please read <https://github.com/shiguredo/oss/blob/master/README.en.md> before use.
 
 ## 時雨堂のオープンソースソフトウェアについて
 
-利用前に https://github.com/shiguredo/oss をお読みください。
-
+利用前に <https://github.com/shiguredo/oss> をお読みください。
 
 ## ライセンス
 
