@@ -1,26 +1,5 @@
-import { simd } from 'wasm-feature-detect'
-
 import loadRnnoiseModule from './rnnoise_wasm'
 import type * as rnnoise_wasm from './rnnoise_wasm'
-
-/**
- * {@link Rnnoise.load} 関数に指定可能なオプション
- */
-interface RnnoiseOptions {
-  /**
-   * wasm ファイルの配置先ディレクトリパス
-   *
-   * デフォルトでは `rnnoise.js` の配置先と同じディレクトリが使用されます
-   */
-  assetsPath?: string
-
-  /**
-   * @internal
-   *
-   * 使用する wasm ファイルの名前（テスト用オプション）
-   */
-  wasmFileName?: string
-}
 
 /**
  * WebAssembly 用にビルドした [RNNoise](https://github.com/shiguredo/rnnoise) の API を提供するためのクラス
@@ -43,38 +22,11 @@ class Rnnoise {
   /**
    * wasm ファイルをロードして {@link Rnnoise} のインスタンスを生成する関数
    *
-   * @param options 指定可能なオプション群
    * @returns 生成された {@link Rnnoise} インスタンス
-   *
-   * @remarks
-   * 実行環境が WebAssembly の SIMD に対応している場合には、SIMD 版の wasm ファイルがロードされます
    */
-  static async load(options: RnnoiseOptions = {}): Promise<Rnnoise> {
-    const rnnoiseModule = await simd().then((isSupported) => {
-      return loadRnnoiseModule({
-        locateFile: (path, prefix) => {
-          if (options.assetsPath !== undefined) {
-            prefix = options.assetsPath.endsWith('/')
-              ? options.assetsPath
-              : `${options.assetsPath}/`
-          }
-
-          if (options.wasmFileName !== undefined) {
-            path = options.wasmFileName
-            console.debug('Loads rnnoise-wasm: ', prefix + path)
-          } else if (isSupported) {
-            path = 'rnnoise_simd.wasm'
-            console.debug('Loads rnnoise-wasm (SIMD ver): ', prefix + path)
-          } else {
-            console.debug('Loads rnnoise-wasm (non SIMD ver): ', prefix + path)
-          }
-
-          return prefix + path
-        },
-      })
-    })
-
-    return Promise.resolve(new Rnnoise(rnnoiseModule))
+  static async load(): Promise<Rnnoise> {
+    const rnnoiseModule = await loadRnnoiseModule();
+    return new Rnnoise(rnnoiseModule)
   }
 
   /**
@@ -83,18 +35,8 @@ class Rnnoise {
    * @param model 使用するノイズ抑制モデル（省略時はデフォルトモデル）
    * @returns 生成されたインスタンス
    */
-  createDenoiseState(model?: Model): DenoiseState {
-    return new DenoiseState(this.rnnoiseModule, model)
-  }
-
-  /**
-   * ノイズ抑制に使用する RNNoise のモデルを生成します
-   *
-   * @param モデル定義文字列
-   * @return 生成されたモデルインスタンス
-   */
-  createModel(modelString: string): Model {
-    return new Model(this.rnnoiseModule, modelString)
+  createDenoiseState(): DenoiseState {
+    return new DenoiseState(this.rnnoiseModule)
   }
 }
 
@@ -116,26 +58,14 @@ class DenoiseState {
   private frameSize: number
 
   /**
-   * 使用しているノイズ抑制モデル
-   *
-   * `undefined` の場合はデフォルトモデルが使われていることを意味します
-   */
-  readonly model?: Model
-
-  /**
    * @internal
    */
-  constructor(rnnoiseModule: rnnoise_wasm.RnnoiseModule, model?: Model) {
+  constructor(rnnoiseModule: rnnoise_wasm.RnnoiseModule) {
     this.rnnoiseModule = rnnoiseModule
-    this.model = model
 
     this.frameSize = this.rnnoiseModule._rnnoise_get_frame_size()
-    let state
-    if (model !== undefined) {
-      state = this.rnnoiseModule._rnnoise_create(model.model)
-    } else {
-      state = this.rnnoiseModule._rnnoise_create()
-    }
+    const state = this.rnnoiseModule._rnnoise_create()
+
     const pcmInputBuf = this.rnnoiseModule._malloc(this.frameSize * F32_BYTE_SIZE)
     const pcmOutputBuf = this.rnnoiseModule._malloc(this.frameSize * F32_BYTE_SIZE)
     if (!state || !pcmInputBuf || !pcmOutputBuf) {
@@ -204,51 +134,4 @@ class DenoiseState {
   }
 }
 
-/**
- * ノイズ抑制に使用する RNNoise のモデル
- *
- * インスタンスを作成するためには {@link Rnnoise.createModel} メソッドを使用してください
- */
-class Model {
-  private rnnoiseModule?: rnnoise_wasm.RnnoiseModule
-
-  /**
-   * @internal
-   **/
-  readonly model: rnnoise_wasm.RNNModel
-
-  /**
-   * @internal
-   **/
-  constructor(rnnoiseModule: rnnoise_wasm.RnnoiseModule, modelString: string) {
-    this.rnnoiseModule = rnnoiseModule
-
-    // モデル定義文字列を、ヌル終端文字列に変換してから `rnnoise_model_from_string` 関数を呼び出す
-    const modelCString = new TextEncoder().encode(`${modelString}\x00`)
-    const modelCStringPtr = rnnoiseModule._malloc(modelCString.length)
-    rnnoiseModule.HEAPU8.subarray(modelCStringPtr, modelCStringPtr + modelCString.length).set(
-      modelCString,
-    )
-    this.model = rnnoiseModule._rnnoise_model_from_string(modelCStringPtr)
-    rnnoiseModule._free(modelCStringPtr)
-
-    if (!this.model) {
-      throw Error('Failed to create Model from a given model string.')
-    }
-  }
-
-  /**
-   * モデルに割り当てられた wasm 内の領域を解放します
-   *
-   * このモデルを参照している {@link DenoiseState} が存在する場合には、
-   * 先にそちらの {@link DenoiseState.destroy} メソッドを呼ぶように注意してください
-   */
-  free(): void {
-    if (this.rnnoiseModule !== undefined) {
-      this.rnnoiseModule._rnnoise_model_free(this.model)
-      this.rnnoiseModule = undefined
-    }
-  }
-}
-
-export { Rnnoise, type RnnoiseOptions, DenoiseState, Model }
+export { Rnnoise, DenoiseState }

@@ -38,9 +38,6 @@ importers:
       vitest:
         specifier: 3.1.2
         version: 3.1.2(@types/node@22.15.3)(yaml@2.7.1)
-      wasm-feature-detect:
-        specifier: 1.8.0
-        version: 1.8.0
 
   devtools:
     dependencies:
@@ -993,9 +990,6 @@ packages:
   vscode-uri@3.1.0:
     resolution: {integrity: sha512-/BpdSx+yCQGnCvecbyXdxHDkuk55/G3xwnC0GqY4gmQ3j+A+g8kzzgB4Nk/SINjqn6+waqw3EgbVF2QKExkRxQ==}
 
-  wasm-feature-detect@1.8.0:
-    resolution: {integrity: sha512-zksaLKM2fVlnB5jQQDqKXXwYHLQUVH9es+5TOOHwGOVJOCeRBCiPjwSg+3tN2AdTCzjgli4jijCH290kXb/zWQ==}
-
   why-is-node-running@2.3.0:
     resolution: {integrity: sha512-hUrmaWBdVDcxvYqnyh09zunKzROWjbZTiNy8dBEjkS7ehEDQibXJ7XvlmtbwuTclUiIyN+CyXQD4Vmko8fNm8w==}
     engines: {node: '>=8'}
@@ -1864,8 +1858,6 @@ snapshots:
       - yaml
 
   vscode-uri@3.1.0: {}
-
-  wasm-feature-detect@1.8.0: {}
 
   why-is-node-running@2.3.0:
     dependencies:
