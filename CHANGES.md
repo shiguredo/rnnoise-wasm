@@ -38,6 +38,8 @@
 
 ### misc
 
+- [ADD] リリースを GitHub Actions 経由にする
+  - @voluntas
 - [ADD] Nodejs 22 と 24 のテストを追加する
   - @voluntas
 - [ADD] playwright を追加
