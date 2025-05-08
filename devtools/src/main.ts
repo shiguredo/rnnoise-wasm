@@ -2,7 +2,7 @@ import { type DenoiseState, Rnnoise } from '@shiguredo/rnnoise-wasm'
 
 const SCRIPT_PROCESSOR_BUFFER_SIZE = 1024
 const INT16_MAX_VALUE = 0x7fff
-const MIC_SCRIPT_PROCESSOR_BUFFER_SIZE = 2048
+const MIC_SCRIPT_PROCESSOR_BUFFER_SIZE = 512
 
 // --- State Variables ---
 let isGenerating = false
@@ -50,7 +50,6 @@ let noiseAlphaValueSpan: HTMLSpanElement | null = null
 let autoNoiseRadioButton: HTMLInputElement | null = null
 let micInputRadioButton: HTMLInputElement | null = null
 let echoCancellationCheckbox: HTMLInputElement | null = null
-let noiseSuppressionCheckbox: HTMLInputElement | null = null
 let autoGainControlCheckbox: HTMLInputElement | null = null
 let micSelectElement: HTMLSelectElement | null = null // Added for microphone selection
 let requestMicPermissionButton: HTMLButtonElement | null = null // Added for requesting mic permission
@@ -91,7 +90,6 @@ async function init() {
   outputAudioElement = document.getElementById('outputAudioElement') as HTMLAudioElement
 
   echoCancellationCheckbox = document.getElementById('echoCancellationCheckbox') as HTMLInputElement
-  noiseSuppressionCheckbox = document.getElementById('noiseSuppressionCheckbox') as HTMLInputElement
   autoGainControlCheckbox = document.getElementById('autoGainControlCheckbox') as HTMLInputElement
 
   if (
@@ -105,7 +103,6 @@ async function init() {
     !autoNoiseRadioButton ||
     !micInputRadioButton ||
     !echoCancellationCheckbox ||
-    !noiseSuppressionCheckbox ||
     !autoGainControlCheckbox ||
     !micSelectElement ||
     !requestMicPermissionButton ||
@@ -140,7 +137,6 @@ async function init() {
 
   // デフォルト値を設定
   echoCancellationCheckbox.checked = false // デフォルト無効
-  noiseSuppressionCheckbox.checked = false // デフォルト無効
   autoGainControlCheckbox.checked = false // デフォルト無効
 
   try {
@@ -447,7 +443,7 @@ async function startMicInput() {
       sampleRate: 48000,
       channelCount: 1,
       echoCancellation: echoCancellationCheckbox?.checked ?? false,
-      noiseSuppression: noiseSuppressionCheckbox?.checked ?? false,
+      noiseSuppression: false, // Always false
       autoGainControl: autoGainControlCheckbox?.checked ?? false,
     },
     video: false,
@@ -848,7 +844,6 @@ function updateButtonLabelsAndState() {
     !autoNoiseRadioButton ||
     !micInputRadioButton ||
     !echoCancellationCheckbox ||
-    !noiseSuppressionCheckbox ||
     !autoGainControlCheckbox ||
     !micSelectElement ||
     !requestMicPermissionButton ||
@@ -898,7 +893,6 @@ function updateButtonLabelsAndState() {
   micInputRadioButton.disabled = isGenerating
 
   echoCancellationCheckbox.disabled = isGenerating || !isMicMode || !micPermissionGranted
-  noiseSuppressionCheckbox.disabled = isGenerating || !isMicMode || !micPermissionGranted
   autoGainControlCheckbox.disabled = isGenerating || !isMicMode || !micPermissionGranted
 
   // Microphone select element state
