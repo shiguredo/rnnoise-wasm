@@ -2,7 +2,7 @@ import { type DenoiseState, Rnnoise } from '@shiguredo/rnnoise-wasm'
 
 const SCRIPT_PROCESSOR_BUFFER_SIZE = 1024
 const INT16_MAX_VALUE = 0x7fff
-const MIC_SCRIPT_PROCESSOR_BUFFER_SIZE = 512
+const MIC_SCRIPT_PROCESSOR_BUFFER_SIZE = 2048
 
 // --- State Variables ---
 let isGenerating = false
@@ -52,6 +52,17 @@ let micInputRadioButton: HTMLInputElement | null = null
 let echoCancellationCheckbox: HTMLInputElement | null = null
 let noiseSuppressionCheckbox: HTMLInputElement | null = null
 let autoGainControlCheckbox: HTMLInputElement | null = null
+let micSelectElement: HTMLSelectElement | null = null // Added for microphone selection
+let requestMicPermissionButton: HTMLButtonElement | null = null // Added for requesting mic permission
+let availableMicDevices: MediaDeviceInfo[] = [] // To store available mic devices
+let micPermissionGranted = false // To track microphone permission status
+
+// Speaker Output State
+let speakerSelectElement: HTMLSelectElement | null = null
+let outputAudioElement: HTMLAudioElement | null = null
+let mediaStreamDestination: MediaStreamAudioDestinationNode | null = null
+let availableSpeakerDevices: MediaDeviceInfo[] = []
+const isSetSinkIdSupported = 'setSinkId' in HTMLMediaElement.prototype
 
 async function init() {
   originalCanvas = document.getElementById('original-waveform') as HTMLCanvasElement
@@ -72,6 +83,12 @@ async function init() {
   noiseAlphaValueSpan = document.getElementById('noiseAlphaValue') as HTMLSpanElement
   autoNoiseRadioButton = document.getElementById('autoNoise') as HTMLInputElement
   micInputRadioButton = document.getElementById('micInput') as HTMLInputElement
+  micSelectElement = document.getElementById('micSelect') as HTMLSelectElement // Get mic select element
+  requestMicPermissionButton = document.getElementById(
+    'requestMicPermissionButton',
+  ) as HTMLButtonElement
+  speakerSelectElement = document.getElementById('speakerSelect') as HTMLSelectElement
+  outputAudioElement = document.getElementById('outputAudioElement') as HTMLAudioElement
 
   echoCancellationCheckbox = document.getElementById('echoCancellationCheckbox') as HTMLInputElement
   noiseSuppressionCheckbox = document.getElementById('noiseSuppressionCheckbox') as HTMLInputElement
@@ -89,7 +106,11 @@ async function init() {
     !micInputRadioButton ||
     !echoCancellationCheckbox ||
     !noiseSuppressionCheckbox ||
-    !autoGainControlCheckbox
+    !autoGainControlCheckbox ||
+    !micSelectElement ||
+    !requestMicPermissionButton ||
+    !speakerSelectElement ||
+    !outputAudioElement
   ) {
     console.error('Control elements not found!')
     alert('Initialization failed: Control elements missing.')
@@ -98,7 +119,23 @@ async function init() {
     if (playbackButton) playbackButton.disabled = true
     if (noiseScaleSlider) noiseScaleSlider.disabled = true
     if (noiseAlphaSlider) noiseAlphaSlider.disabled = true
+    if (micSelectElement) micSelectElement.disabled = true
+    if (requestMicPermissionButton) requestMicPermissionButton.disabled = true
+    if (speakerSelectElement) speakerSelectElement.disabled = true
     return
+  }
+
+  // Add this check for setSinkId support
+  if (!isSetSinkIdSupported) {
+    console.warn(
+      'HTMLMediaElement.setSinkId() is not supported in this browser. Speaker selection will be disabled.',
+    )
+    if (speakerSelectElement) {
+      speakerSelectElement.disabled = true
+      const option = document.createElement('option')
+      option.textContent = 'Speaker selection not supported'
+      speakerSelectElement.appendChild(option)
+    }
   }
 
   // デフォルト値を設定
@@ -122,6 +159,9 @@ async function init() {
     playbackButton.disabled = true
     noiseScaleSlider.disabled = true
     noiseAlphaSlider.disabled = true
+    if (micSelectElement) micSelectElement.disabled = true
+    if (requestMicPermissionButton) requestMicPermissionButton.disabled = true
+    if (speakerSelectElement) speakerSelectElement.disabled = true
     return
   }
 
@@ -151,21 +191,94 @@ async function init() {
 
   autoNoiseRadioButton.addEventListener('change', handleNoiseSourceChange)
   micInputRadioButton.addEventListener('change', handleNoiseSourceChange)
+  micSelectElement.addEventListener('change', handleMicDeviceChange)
+  requestMicPermissionButton.addEventListener('click', requestMicrophonePermission)
+  if (isSetSinkIdSupported && speakerSelectElement) {
+    speakerSelectElement.addEventListener('change', handleSpeakerDeviceChange)
+  }
+
+  // デフォルトの入力ソースをマイク入力に設定
+  micInputRadioButton.checked = true
+  autoNoiseRadioButton.checked = false
 
   updateButtonLabelsAndState()
 }
 
+async function populateMicrophoneList() {
+  if (!micSelectElement || !micPermissionGranted) {
+    if (micSelectElement) micSelectElement.disabled = true
+    return
+  }
+
+  const previouslySelectedDeviceId = micSelectElement.value
+  micSelectElement.innerHTML = '' // Clear existing options
+
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices()
+    availableMicDevices = devices.filter((device) => device.kind === 'audioinput')
+
+    if (availableMicDevices.length === 0) {
+      const option = document.createElement('option')
+      option.value = ''
+      option.textContent = 'No microphones found'
+      micSelectElement.appendChild(option)
+      micSelectElement.disabled = true
+      return
+    }
+
+    for (const device of availableMicDevices) {
+      const option = document.createElement('option')
+      option.value = device.deviceId
+      option.textContent = device.label || `Microphone ${micSelectElement.options.length + 1}`
+      micSelectElement.appendChild(option)
+    }
+
+    // Try to restore previously selected device
+    if (
+      previouslySelectedDeviceId &&
+      micSelectElement.querySelector(`option[value="${previouslySelectedDeviceId}"]`)
+    ) {
+      micSelectElement.value = previouslySelectedDeviceId
+    }
+
+    micSelectElement.disabled = false
+  } catch (err) {
+    console.error('Error populating microphone list:', err)
+    const option = document.createElement('option')
+    option.value = ''
+    option.textContent = 'Error listing microphones'
+    micSelectElement.appendChild(option)
+    micSelectElement.disabled = true
+    availableMicDevices = [] // Clear on error
+  }
+}
+
+function handleMicDeviceChange() {
+  if (isGenerating && micInputRadioButton?.checked) {
+    console.log('Microphone selection changed. Restarting audio processing...')
+    // Stop the current audio processing.
+    // This will also stop the current mic input.
+    stopGenerating()
+
+    // Short delay to allow resources to release properly
+    setTimeout(() => {
+      // Restart audio processing. startGenerating will call startMicInput,
+      // which will now use the newly selected device from micSelectElement.
+      startGenerating()
+      updateButtonLabelsAndState() // Ensure UI is consistent
+    }, 150) // Slightly increased delay
+  }
+}
+
 function handleNoiseSourceChange() {
   if (isGenerating) {
-    // If generation is active, stop and restart with the new source
     stopGenerating()
-    // Short delay to allow resources to release if switching from mic
     setTimeout(() => {
       startGenerating()
       updateButtonLabelsAndState()
     }, 100)
   }
-  updateButtonLabelsAndState() // Update UI elements based on selection
+  updateButtonLabelsAndState()
 }
 
 function toggleGeneration() {
@@ -194,17 +307,10 @@ function togglePlayback() {
     console.warn('[togglePlayback] Not generating, cannot toggle playback.')
     return
   }
-  // For mic input, playback is essentially just the processed output,
-  // which is always active if denoising is on.
-  // The concept of "playback" is more for auto-generated noise.
   if (micInputRadioButton?.checked) {
     console.log(
       '[togglePlayback] Playback control is not applicable for microphone input in this demo setup.',
     )
-    // We can choose to disable the button or just log a message.
-    // For now, let's allow toggling isPlaying for consistency,
-    // even if its direct effect changes.
-    // The actual audio output path will handle mic data.
   }
 
   isPlaying = !isPlaying
@@ -219,7 +325,7 @@ function togglePlayback() {
 async function startGenerating() {
   isGenerating = true
   lastNoiseValue = 0
-  audioBufferReadIndex = frameSize // Reset read index for auto-generated noise buffer
+  audioBufferReadIndex = frameSize
 
   if (isDenoisingEnabled && !denoiseState) {
     createDenoiseState()
@@ -227,29 +333,23 @@ async function startGenerating() {
 
   if (micInputRadioButton?.checked) {
     try {
-      await startMicInput()
+      await startMicInput() // This will now use the selected mic and populate the list
     } catch (error) {
       console.error('Failed to start microphone input:', error)
       alert('Could not start microphone. Please check permissions and console.')
       isGenerating = false
-      // Ensure UI reflects that generation failed
       if (micInputRadioButton) micInputRadioButton.checked = false
-      if (autoNoiseRadioButton) autoNoiseRadioButton.checked = true // Revert to auto
+      if (autoNoiseRadioButton) autoNoiseRadioButton.checked = true
       updateButtonLabelsAndState()
       return
     }
   } else {
-    // Stop mic input if it was active and now switching to auto-noise
     stopMicInput()
   }
 
-  // Only start processLoop if not using mic input, as mic has its own audio processing chain
   if (autoNoiseRadioButton?.checked) {
     processLoop()
   } else if (micInputRadioButton?.checked && micSourceNode && audioContext) {
-    // For mic input, the "processing" is tied to the micScriptProcessor's onaudioprocess
-    // which directly feeds denoiseState if active.
-    // We still need a loop for visualization.
     requestAnimationFrameId = requestAnimationFrame(visualizeMicInputLoop)
   }
 }
@@ -257,7 +357,7 @@ async function startGenerating() {
 function stopGenerating() {
   isGenerating = false
   if (isPlaying) {
-    stopAudioPlayback() // Stops the playback ScriptProcessor
+    stopAudioPlayback()
   }
   if (requestAnimationFrameId !== null) {
     cancelAnimationFrame(requestAnimationFrameId)
@@ -266,23 +366,67 @@ function stopGenerating() {
   destroyDenoiseState()
   clearCanvas(originalCanvasCtx, originalCanvas)
   clearCanvas(processedCanvasCtx, processedCanvas)
-  stopMicInput() // Ensure mic is stopped
+  stopMicInput() // This will stop the current mic stream
 
-  // Clear mic playback queue
   processedMicFramesQueue.length = 0
   currentPlaybackFrame = null
   currentPlaybackFrameReadIndex = 0
 }
 
 async function startMicInput() {
+  if (!micPermissionGranted) {
+    console.warn('[startMicInput] Microphone permission not granted.')
+    alert('Please grant microphone permission first by clicking "Load Microphones".')
+    // Attempt to stop generation if it was somehow started
+    isGenerating = false
+    updateButtonLabelsAndState()
+    throw new Error('Microphone permission not granted.')
+  }
+  if (micSelectElement && micSelectElement.value === '' && availableMicDevices.length > 0) {
+    console.warn('[startMicInput] No microphone selected.')
+    alert('Please select a microphone from the list.')
+    isGenerating = false
+    updateButtonLabelsAndState()
+    throw new Error('No microphone selected.')
+  }
+  if (availableMicDevices.length === 0 && micPermissionGranted) {
+    console.warn('[startMicInput] No microphones available, though permission was granted.')
+    alert('No microphones found. Please connect a microphone and click "Load Microphones" again.')
+    isGenerating = false
+    updateButtonLabelsAndState()
+    throw new Error('No microphones available.')
+  }
+
   if (micStream) {
-    console.warn('[startMicInput] Microphone input already active.')
-    return
+    console.warn(
+      '[startMicInput] Microphone input attempt while stream already active. Stopping old one.',
+    )
+    // Ensure the old stream is properly stopped before starting a new one.
+    // This can happen if startMicInput is called without a full stopGenerating cycle.
+    const tempTracks = micStream.getTracks()
+    for (const track of tempTracks) {
+      track.stop()
+    }
+    micStream = null
+    if (micSourceNode) {
+      micSourceNode.disconnect()
+      micSourceNode = null
+    }
+    if (micScriptProcessor) {
+      micScriptProcessor.disconnect()
+      micScriptProcessor = null
+    }
+  }
+
+  // Populate/update microphone list each time mic input is started
+  // This handles cases like granting permission after page load or plugging in a new mic.
+  // await populateMicrophoneList() // This is now called after permission grant
+  if (micSelectElement) {
+    // micSelectElement.disabled = availableMicDevices.length === 0 || !isGenerating
+    // Disability is handled by requestPermission and updateButtonLabelsAndState
   }
 
   if (!audioContext || audioContext.state === 'closed') {
-    // latencyHint に 'interactive' を指定して低遅延を試みる
-    // 数値を直接指定することも可能 (例: 0.01 for 10ms)
     audioContext = new AudioContext({ sampleRate: 48000, latencyHint: 'interactive' })
     console.log('[startMicInput] AudioContext created/reopened. State:', audioContext.state)
   }
@@ -297,43 +441,91 @@ async function startMicInput() {
     )
   }
 
+  const selectedDeviceId = micSelectElement?.value
+  const constraints: MediaStreamConstraints = {
+    audio: {
+      sampleRate: 48000,
+      channelCount: 1,
+      echoCancellation: echoCancellationCheckbox?.checked ?? false,
+      noiseSuppression: noiseSuppressionCheckbox?.checked ?? false,
+      autoGainControl: autoGainControlCheckbox?.checked ?? false,
+    },
+    video: false,
+  }
+
+  if (
+    selectedDeviceId &&
+    availableMicDevices.find((d) => d.deviceId === selectedDeviceId) &&
+    constraints.audio &&
+    typeof constraints.audio === 'object'
+  ) {
+    constraints.audio.deviceId = { exact: selectedDeviceId }
+    console.log(`[startMicInput] Attempting to use microphone: ID=${selectedDeviceId}`)
+  } else {
+    console.log(
+      '[startMicInput] No specific microphone selected, or selected device not found. Using default.',
+    )
+    // If a device was selected but not found in availableMicDevices (e.g., unplugged),
+    // we should clear the deviceId constraint to use the system default.
+    if (constraints.audio && typeof constraints.audio === 'object') {
+      // Ensure that constraints.audio is treated as an object that can have deviceId
+      const audioSettings = constraints.audio as MediaTrackConstraints
+      audioSettings.deviceId = undefined
+    }
+  }
+
   try {
-    micStream = await navigator.mediaDevices.getUserMedia({
-      audio: {
-        sampleRate: 48000, // Request 48kHz
-        channelCount: 1,
-        echoCancellation: echoCancellationCheckbox?.checked ?? false,
-        noiseSuppression: noiseSuppressionCheckbox?.checked ?? false,
-        autoGainControl: autoGainControlCheckbox?.checked ?? false,
-      },
-      video: false,
-    })
+    micStream = await navigator.mediaDevices.getUserMedia(constraints)
     console.log('[startMicInput] Microphone stream obtained.')
+    // If list was empty and now we have a stream, re-populate to get labels.
+    // This handles the case where labels are only available after the first successful getUserMedia.
+    const currentLabelsExist = availableMicDevices.some((d) => d.label && d.label !== '')
+    if (
+      micSelectElement &&
+      (!currentLabelsExist || availableMicDevices.length === 0) &&
+      micStream
+    ) {
+      console.log(
+        '[startMicInput] Repopulating mic list to get device labels after stream obtained.',
+      )
+      await populateMicrophoneList() // Re-populate to get labels
+      // Ensure the selection made by getUserMedia (if it picked a default) or the previous selection is reflected
+      const activeTrack = micStream.getAudioTracks()[0]
+      if (activeTrack) {
+        const activeDeviceId = activeTrack.getSettings().deviceId
+        if (activeDeviceId && micSelectElement.querySelector(`option[value="${activeDeviceId}"]`)) {
+          micSelectElement.value = activeDeviceId
+        } else if (
+          selectedDeviceId &&
+          micSelectElement.querySelector(`option[value="${selectedDeviceId}"]`)
+        ) {
+          // fallback to original selection if active one is not in list (should not happen often)
+          micSelectElement.value = selectedDeviceId
+        }
+      }
+    }
   } catch (err) {
     console.error('[startMicInput] Error getting microphone stream:', err)
-    throw err // Re-throw to be caught by caller
+    if (micSelectElement) micSelectElement.disabled = true
+    availableMicDevices = [] // Clear devices on error
+    throw err // Re-throw to be caught by caller in startGenerating
   }
 
   micSourceNode = audioContext.createMediaStreamSource(micStream)
-
-  // Setup a ScriptProcessorNode to get raw audio data from the mic
-  // This will feed into audioBufferOriginal for visualization and processing
   micScriptProcessor = audioContext.createScriptProcessor(MIC_SCRIPT_PROCESSOR_BUFFER_SIZE, 1, 1)
   console.log(
     `[startMicInput] Mic ScriptProcessor created with buffer size: ${MIC_SCRIPT_PROCESSOR_BUFFER_SIZE}`,
   )
-  micAccumulatedSamplesCount = 0 // 蓄積バッファをリセット
+  micAccumulatedSamplesCount = 0
 
   micScriptProcessor.onaudioprocess = (event: AudioProcessingEvent) => {
     if (!isGenerating || !micInputRadioButton?.checked || !rnnoise) return
 
-    const inputData = event.inputBuffer.getChannelData(0) // 長さは MIC_SCRIPT_PROCESSOR_BUFFER_SIZE
+    const inputData = event.inputBuffer.getChannelData(0)
 
-    // 新しいデータを蓄積バッファに追加
     if (micAccumulatedSamplesCount + inputData.length > micAccumulatedSamples.length) {
-      // バッファが溢れそうな場合は、古いデータから必要な分だけ残してシフト
       const spaceNeeded = inputData.length
-      const keepFromEnd = Math.max(0, micAccumulatedSamplesCount - spaceNeeded - frameSize) // 念のためframeSizeのマージン
+      const keepFromEnd = Math.max(0, micAccumulatedSamplesCount - spaceNeeded - frameSize)
       const tempData = micAccumulatedSamples.slice(
         micAccumulatedSamplesCount - keepFromEnd,
         micAccumulatedSamplesCount,
@@ -348,12 +540,9 @@ async function startMicInput() {
     micAccumulatedSamples.set(inputData, micAccumulatedSamplesCount)
     micAccumulatedSamplesCount += inputData.length
 
-    // 処理可能なフレーム (frameSize) が蓄積バッファにある限りループ
     while (micAccumulatedSamplesCount >= frameSize) {
-      // audioBufferOriginal に frameSize 分のデータをコピー
       audioBufferOriginal.set(micAccumulatedSamples.subarray(0, frameSize))
 
-      // デノイズ処理
       if (isDenoisingEnabled && denoiseState) {
         const tempProcessingFrame = new Float32Array(frameSize)
         for (let i = 0; i < frameSize; i++) {
@@ -367,37 +556,21 @@ async function startMicInput() {
           )
         }
       } else {
-        audioBufferProcessed.set(audioBufferOriginal) // Or copy original if not denoising
+        audioBufferProcessed.set(audioBufferOriginal)
       }
 
-      // 再生が有効なら、処理済みフレームをキューに追加
       if (isPlaying) {
-        // audioBufferProcessed にはデノイズ済み(またはオリジナル)データが入っている
         const frameToQueue = new Float32Array(frameSize)
         frameToQueue.set(audioBufferProcessed)
         processedMicFramesQueue.push(frameToQueue)
       }
 
-      // 処理した分のデータを蓄積バッファから削除 (実際には残りのデータを先頭に移動)
       micAccumulatedSamples.copyWithin(0, frameSize, micAccumulatedSamplesCount)
-      // 末尾の不要なデータをクリア (オプションだが、デバッグ時に役立つことも)
-      // micAccumulatedSamples.fill(0, micAccumulatedSamplesCount - frameSize, micAccumulatedSamplesCount);
       micAccumulatedSamplesCount -= frameSize
     }
   }
 
   micSourceNode.connect(micScriptProcessor)
-  micScriptProcessor.connect(audioContext.destination) // Connect to destination to keep it alive, but output will be silent.
-  // Actually, we might not want to connect micScriptProcessor to destination if it's just for processing.
-  // The playback scriptProcessor handles the actual output. Let's disconnect it from destination.
-  micScriptProcessor.disconnect(audioContext.destination) // Correction: Don't send raw mic to output here.
-  // The ScriptProcessorNode needs to be connected to *something* to keep the onaudioprocess event firing.
-  // This is a requirement of the Web Audio API: a node remains active only as long as it is connected to an output.
-  // However, we do not want the raw microphone input to be audible, so we cannot connect it directly to the destination.
-  // Instead, we use a dummy GainNode with its gain set to 0. This ensures that the processor remains active
-  // without producing any audible output. This is a common workaround when using ScriptProcessorNode.
-  // Note: In modern implementations, AudioWorklets provide a more flexible and efficient way to handle such cases.
-  // For now, this approach ensures compatibility and maintains the processor's activity for further processing.
   const dummyGain = audioContext.createGain()
   dummyGain.gain.value = 0
   micScriptProcessor.connect(dummyGain)
@@ -412,7 +585,7 @@ function stopMicInput() {
     micScriptProcessor = null
     console.log('[stopMicInput] Mic ScriptProcessor disconnected and cleared.')
   }
-  micAccumulatedSamplesCount = 0 // 蓄積バッファのカウントをリセット
+  micAccumulatedSamplesCount = 0
   if (micSourceNode) {
     micSourceNode.disconnect()
     micSourceNode = null
@@ -425,7 +598,8 @@ function stopMicInput() {
     micStream = null
     console.log('[stopMicInput] Microphone stream stopped.')
   }
-  // No need to close AudioContext here, it's shared
+  // availableMicDevices = [] // Clear available devices when mic input stops
+  // Don't disable micSelectElement here, let updateButtonLabelsAndState handle it
 }
 
 function startAudioPlayback() {
@@ -440,9 +614,16 @@ function startAudioPlayback() {
   isPlaying = true
 
   if (!audioContext || audioContext.state === 'closed') {
-    // latencyHint に 'interactive' を指定して低遅延を試みる
     audioContext = new AudioContext({ sampleRate: 48000, latencyHint: 'interactive' })
     console.log('[startAudioPlayback] AudioContext created. State:', audioContext.state)
+    // Create the MediaStreamDestinationNode when AudioContext is created
+    if (isSetSinkIdSupported && audioContext && !mediaStreamDestination) {
+      mediaStreamDestination = audioContext.createMediaStreamDestination()
+      if (outputAudioElement) {
+        outputAudioElement.srcObject = mediaStreamDestination.stream
+        console.log('Output audio element connected to MediaStreamDestination.')
+      }
+    }
   }
   if (audioContext.state === 'suspended') {
     audioContext
@@ -453,6 +634,15 @@ function startAudioPlayback() {
       .catch((err) => console.error('[startAudioPlayback] Failed to resume AudioContext:', err))
   }
 
+  // Ensure MediaStreamDestination is ready before connecting to it
+  if (isSetSinkIdSupported && !mediaStreamDestination && audioContext) {
+    mediaStreamDestination = audioContext.createMediaStreamDestination()
+    if (outputAudioElement) {
+      outputAudioElement.srcObject = mediaStreamDestination.stream
+      console.log('Output audio element re-connected to MediaStreamDestination (playback start).')
+    }
+  }
+
   if (audioContext.sampleRate !== 48000) {
     console.warn(
       `AudioContext sample rate is ${audioContext.sampleRate}, not 48000. RNNoise might not work as expected.`,
@@ -461,15 +651,23 @@ function startAudioPlayback() {
 
   scriptProcessor = audioContext.createScriptProcessor(SCRIPT_PROCESSOR_BUFFER_SIZE, 1, 1)
   scriptProcessor.onaudioprocess = handleAudioProcess
-  scriptProcessor.connect(audioContext.destination)
-  console.log('[startAudioPlayback] ScriptProcessorNode connected for playback.')
+  // Connect to mediaStreamDestination if supported, otherwise fallback to default destination
+  if (isSetSinkIdSupported && mediaStreamDestination) {
+    scriptProcessor.connect(mediaStreamDestination)
+    console.log(
+      '[startAudioPlayback] ScriptProcessorNode connected to MediaStreamDestination for playback.',
+    )
+  } else {
+    scriptProcessor.connect(audioContext.destination) // Fallback
+    console.log(
+      '[startAudioPlayback] ScriptProcessorNode connected to default AudioContext destination.',
+    )
+  }
 
-  // For auto-generated noise, this reset is critical.
-  // For mic input, audioBufferReadIndex is reset by the mic's onaudioprocess.
   if (autoNoiseRadioButton?.checked) {
     audioBufferReadIndex = frameSize
   } else if (micInputRadioButton?.checked) {
-    processedMicFramesQueue.length = 0 // Clear the queue for mic input
+    processedMicFramesQueue.length = 0
     currentPlaybackFrame = null
     currentPlaybackFrameReadIndex = 0
   }
@@ -484,45 +682,49 @@ function stopAudioPlayback() {
     scriptProcessor = null
     console.log('ScriptProcessorNode disconnected.')
   }
+  // Optionally, when stopping playback, clear the srcObject of the audio element
+  // to free up resources, if no other audio is expected to play through it.
+  // However, if AudioContext might still be used for other purposes that eventually
+  // route to mediaStreamDestination, keep it connected.
+  // For this demo, stopping playback implies all app-generated sound stops.
+  if (outputAudioElement && isSetSinkIdSupported) {
+    // outputAudioElement.srcObject = null; // This might be too aggressive if context is reused.
+    // outputAudioElement.pause(); // More gentle stop.
+  }
 }
 
 function handleAudioProcess(event: AudioProcessingEvent) {
   if (!isPlaying || !scriptProcessor) return
 
   const outputBuffer = event.outputBuffer.getChannelData(0)
-  const bufferSizeNode = outputBuffer.length // This is SCRIPT_PROCESSOR_BUFFER_SIZE
+  const bufferSizeNode = outputBuffer.length
 
   if (autoNoiseRadioButton?.checked && rnnoise) {
-    // Auto-generated noise path (existing logic)
     for (let i = 0; i < bufferSizeNode; i++) {
       if (audioBufferReadIndex >= frameSize) {
-        generateAndProcessFrameForAutoNoise() // This resets audioBufferReadIndex for auto-noise
+        generateAndProcessFrameForAutoNoise()
       }
       const sourceBuffer = isDenoisingEnabled ? audioBufferProcessed : audioBufferOriginal
       if (audioBufferReadIndex < sourceBuffer.length) {
         outputBuffer[i] = sourceBuffer[audioBufferReadIndex]
       } else {
-        outputBuffer[i] = 0 // Safety for out-of-bounds
+        outputBuffer[i] = 0
       }
       audioBufferReadIndex++
     }
   } else if (micInputRadioButton?.checked) {
-    // Microphone input path (new logic using queue)
     for (let i = 0; i < bufferSizeNode; i++) {
       if (currentPlaybackFrame === null || currentPlaybackFrameReadIndex >= frameSize) {
-        // Try to get a new frame from the queue
         if (processedMicFramesQueue.length > 0) {
           const shiftedFrame = processedMicFramesQueue.shift()
           if (shiftedFrame === undefined) {
-            currentPlaybackFrame = null // Explicitly assign null if shift() result is undefined
+            currentPlaybackFrame = null
             outputBuffer[i] = 0
             continue
           }
-          // If shiftedFrame is not undefined, it can be assigned to currentPlaybackFrame
           currentPlaybackFrame = shiftedFrame
           currentPlaybackFrameReadIndex = 0
         } else {
-          // Queue is empty, output silence for this sample
           currentPlaybackFrame = null
           outputBuffer[i] = 0
           continue
@@ -537,18 +739,15 @@ function handleAudioProcess(event: AudioProcessingEvent) {
       }
     }
   } else {
-    // Neither mode selected, or some other state - output silence
     for (let i = 0; i < bufferSizeNode; i++) {
       outputBuffer[i] = 0
     }
   }
 }
 
-// Renamed from generateAndProcessFrame to be specific to auto-noise mode
 function generateAndProcessFrameForAutoNoise() {
   if (!rnnoise || !autoNoiseRadioButton?.checked) return
 
-  // Generate noise
   for (let i = 0; i < frameSize; i++) {
     const whiteNoise = (Math.random() * 2 - 1) * noiseGenerationScale
     audioBufferOriginal[i] =
@@ -556,7 +755,6 @@ function generateAndProcessFrameForAutoNoise() {
     lastNoiseValue = audioBufferOriginal[i]
   }
 
-  // Process with RNNoise if enabled
   if (isDenoisingEnabled && denoiseState) {
     const tempProcessingFrame = new Float32Array(audioBufferOriginal)
     for (let i = 0; i < frameSize; i++) {
@@ -564,7 +762,6 @@ function generateAndProcessFrameForAutoNoise() {
     }
     denoiseState.processFrame(tempProcessingFrame)
 
-    // Copy processed data back, scaling down and clamping
     for (let i = 0; i < frameSize; i++) {
       audioBufferProcessed[i] = Math.max(
         -1.0,
@@ -572,14 +769,12 @@ function generateAndProcessFrameForAutoNoise() {
       )
     }
   } else {
-    // If denoising is off, copy original to processed buffer
     audioBufferProcessed.set(audioBufferOriginal)
   }
   audioBufferReadIndex = 0
 }
 
 function processLoop() {
-  // This loop is for auto-generated noise processing and visualization
   if (!isGenerating || !autoNoiseRadioButton?.checked) {
     if (requestAnimationFrameId !== null) {
       cancelAnimationFrame(requestAnimationFrameId)
@@ -588,15 +783,12 @@ function processLoop() {
     return
   }
 
-  generateAndProcessFrameForAutoNoise() // Use the renamed function
+  generateAndProcessFrameForAutoNoise()
 
-  // Draw waveforms
   if (originalCanvasCtx && originalCanvas) {
-    // Original waveform remains black
     drawWaveformFrame(originalCanvasCtx, originalCanvas, audioBufferOriginal, 'black')
   }
   if (processedCanvasCtx && processedCanvas) {
-    // Processed waveform color depends on denoise state
     const processedColor = isDenoisingEnabled ? 'blue' : 'red'
     drawWaveformFrame(processedCanvasCtx, processedCanvas, audioBufferProcessed, processedColor)
   }
@@ -605,7 +797,6 @@ function processLoop() {
 }
 
 function visualizeMicInputLoop() {
-  // This loop is for microphone input visualization
   if (!isGenerating || !micInputRadioButton?.checked) {
     if (requestAnimationFrameId !== null) {
       cancelAnimationFrame(requestAnimationFrameId)
@@ -614,8 +805,6 @@ function visualizeMicInputLoop() {
     return
   }
 
-  // For mic input, audioBufferOriginal and audioBufferProcessed are updated
-  // by micScriptProcessor.onaudioprocess. We just draw them here.
   if (originalCanvasCtx && originalCanvas) {
     drawWaveformFrame(originalCanvasCtx, originalCanvas, audioBufferOriginal, 'black')
   }
@@ -660,33 +849,80 @@ function updateButtonLabelsAndState() {
     !micInputRadioButton ||
     !echoCancellationCheckbox ||
     !noiseSuppressionCheckbox ||
-    !autoGainControlCheckbox
+    !autoGainControlCheckbox ||
+    !micSelectElement ||
+    !requestMicPermissionButton ||
+    !speakerSelectElement ||
+    !outputAudioElement
   )
     return
 
-  generateButton.textContent = isGenerating ? 'Stop Audio Processing' : 'Start Audio Processing'
-
   const isMicMode = micInputRadioButton.checked === true
+
+  // Request Mic Permission Button
+  if (isMicMode) {
+    requestMicPermissionButton.disabled = micPermissionGranted || isGenerating
+    if (micPermissionGranted) {
+      requestMicPermissionButton.textContent = 'Microphones Loaded'
+    } else {
+      requestMicPermissionButton.textContent = isGenerating
+        ? 'Processing... (Cannot Load Mics)'
+        : 'Load Microphones'
+    }
+  } else {
+    requestMicPermissionButton.disabled = true // Disable if not in mic mode
+    requestMicPermissionButton.textContent = 'Load Microphones' // Reset text
+  }
+
+  // Generate Button State
+  if (isMicMode) {
+    generateButton.disabled =
+      !micPermissionGranted ||
+      availableMicDevices.length === 0 ||
+      (micSelectElement.value === '' && availableMicDevices.length > 0) ||
+      rnnoise === null
+    if (isGenerating) generateButton.disabled = false // If already generating, it should be enabled to stop
+  } else {
+    // Auto-noise mode: enable if rnnoise is loaded
+    generateButton.disabled = rnnoise === null
+  }
+  generateButton.textContent = isGenerating ? 'Stop Audio Processing' : 'Start Audio Processing'
 
   denoiseButton.disabled = !isGenerating
   denoiseButton.textContent = isDenoisingEnabled ? 'Disable Denoise' : 'Enable Denoise'
 
-  // Playback button logic might need adjustment for mic mode
   playbackButton.disabled = !isGenerating
   playbackButton.textContent = isPlaying ? 'Stop Playback' : 'Start Playback'
 
-  // Disable noise type selection while generating
   autoNoiseRadioButton.disabled = isGenerating
   micInputRadioButton.disabled = isGenerating
 
-  // Disable microphone settings checkboxes while generating
-  echoCancellationCheckbox.disabled = isGenerating
-  noiseSuppressionCheckbox.disabled = isGenerating
-  autoGainControlCheckbox.disabled = isGenerating
+  echoCancellationCheckbox.disabled = isGenerating || !isMicMode || !micPermissionGranted
+  noiseSuppressionCheckbox.disabled = isGenerating || !isMicMode || !micPermissionGranted
+  autoGainControlCheckbox.disabled = isGenerating || !isMicMode || !micPermissionGranted
 
-  // Disable noise parameter sliders only if mic input is selected
-  noiseScaleSlider.disabled = isMicMode
-  noiseAlphaSlider.disabled = isMicMode
+  // Microphone select element state
+  if (isMicMode) {
+    micSelectElement.disabled =
+      !micPermissionGranted || availableMicDevices.length === 0 || isGenerating
+  } else {
+    micSelectElement.disabled = true
+  }
+
+  // Speaker select element state
+  if (isSetSinkIdSupported) {
+    speakerSelectElement.disabled =
+      !micPermissionGranted || availableSpeakerDevices.length === 0 || isGenerating
+    // Allow changing speaker while generating if conditions met
+    if (isGenerating && micPermissionGranted && availableSpeakerDevices.length > 0) {
+      speakerSelectElement.disabled = false
+    }
+  } else {
+    speakerSelectElement.disabled = true // Always disabled if not supported
+  }
+
+  noiseScaleSlider.disabled = isMicMode || isGenerating
+  noiseAlphaSlider.disabled = isMicMode || isGenerating
 }
 
 function drawWaveformFrame(
@@ -717,6 +953,128 @@ function drawWaveformFrame(
   }
 
   ctx.stroke()
+}
+
+async function requestMicrophonePermission() {
+  if (!requestMicPermissionButton || !micSelectElement) return
+
+  try {
+    // Request microphone permission
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+    micPermissionGranted = true
+    console.log('Microphone permission granted.')
+
+    // Populate microphone list now that permission is granted
+    await populateMicrophoneList()
+
+    // Update UI states
+    requestMicPermissionButton.disabled = true
+    requestMicPermissionButton.textContent = 'Microphones Loaded'
+    micSelectElement.disabled = availableMicDevices.length === 0
+    if (availableMicDevices.length > 0 && micSelectElement.options.length > 0) {
+      // If devices are found, and it's not just "No microphones found", enable generate button if in mic mode
+      // This logic will be better handled in updateButtonLabelsAndState
+    }
+    // Stop the temporary stream used for permission request, if it's not going to be used immediately.
+    // In this flow, startMicInput will get a new stream with specific deviceId.
+    for (const track of stream.getTracks()) {
+      track.stop()
+    }
+    // Populate speaker list as well, now that we have general media permission
+    if (isSetSinkIdSupported) {
+      await populateSpeakerList()
+    }
+  } catch (err) {
+    console.error('Error requesting microphone permission:', err)
+    micPermissionGranted = false
+    alert('Failed to get microphone permission. Please check your browser settings.')
+    micSelectElement.disabled = true
+    // Ensure the button remains enabled to try again, or update its text
+    requestMicPermissionButton.textContent = 'Retry Load Microphones'
+    requestMicPermissionButton.disabled = false
+  }
+  updateButtonLabelsAndState() // Update all button states
+}
+
+async function populateSpeakerList() {
+  if (!speakerSelectElement || !isSetSinkIdSupported || !micPermissionGranted) {
+    if (speakerSelectElement) speakerSelectElement.disabled = true
+    return
+  }
+
+  const previouslySelectedDeviceId = speakerSelectElement.value
+  speakerSelectElement.innerHTML = '' // Clear existing options
+
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices()
+    availableSpeakerDevices = devices.filter((device) => device.kind === 'audiooutput')
+
+    if (availableSpeakerDevices.length === 0) {
+      const option = document.createElement('option')
+      option.value = ''
+      option.textContent = 'No speakers found'
+      speakerSelectElement.appendChild(option)
+      speakerSelectElement.disabled = true
+      return
+    }
+
+    for (const device of availableSpeakerDevices) {
+      const option = document.createElement('option')
+      option.value = device.deviceId
+      option.textContent = device.label || `Speaker ${speakerSelectElement.options.length + 1}`
+      speakerSelectElement.appendChild(option)
+    }
+
+    if (
+      previouslySelectedDeviceId &&
+      speakerSelectElement.querySelector(`option[value="${previouslySelectedDeviceId}"]`)
+    ) {
+      speakerSelectElement.value = previouslySelectedDeviceId
+    }
+
+    // Attempt to set the initial speaker if one is selected/default
+    if (outputAudioElement && speakerSelectElement.value) {
+      try {
+        await outputAudioElement.setSinkId(speakerSelectElement.value)
+        console.log(
+          `Initial audio output set to: ${speakerSelectElement.options[speakerSelectElement.selectedIndex].text}`,
+        )
+      } catch (setSinkIdError) {
+        console.warn('Could not set initial speaker:', setSinkIdError)
+        // If default speaker fails to set, it might be restricted. UI will show default anyway.
+      }
+    }
+    speakerSelectElement.disabled = isGenerating // Disable if generating, enable otherwise
+  } catch (err) {
+    console.error('Error populating speaker list:', err)
+    const option = document.createElement('option')
+    option.value = ''
+    option.textContent = 'Error listing speakers'
+    speakerSelectElement.appendChild(option)
+    speakerSelectElement.disabled = true
+    availableSpeakerDevices = []
+  }
+}
+
+async function handleSpeakerDeviceChange() {
+  if (
+    !speakerSelectElement ||
+    !outputAudioElement ||
+    !isSetSinkIdSupported ||
+    !speakerSelectElement.value
+  ) {
+    return
+  }
+  try {
+    await outputAudioElement.setSinkId(speakerSelectElement.value)
+    console.log(
+      `Audio output changed to: ${speakerSelectElement.options[speakerSelectElement.selectedIndex].text}`,
+    )
+  } catch (err) {
+    console.error('Error setting audio output device (setSinkId):', err)
+    alert(`Error changing speaker: ${(err as Error).name} - ${(err as Error).message}`)
+    // Optionally revert to a known good state or inform user
+  }
 }
 
 document.addEventListener('DOMContentLoaded', init)
