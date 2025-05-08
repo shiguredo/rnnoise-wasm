@@ -1,0 +1,6 @@
+packages:
+  - .
+  - devtools
+onlyBuiltDependencies:
+  - "@biomejs/biome"
+  - esbuild

@@ -1,0 +1,110 @@
+name: build
+
+on:
+  push:
+    tags:
+      - '*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-assets:
+    name: Build WASM and JS files
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 4.0.8
+      - run: emcc --version
+      - run: sudo apt install -y autoconf automake
+      - run: ./build-rnnoise.sh
+
+      # [注意] setup-emsdkが古いnode/npmをインストールしてしまうので、
+      #        setup-nodeはその後に呼び出す必要がある。
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - run: node --version
+      - run: pnpm --version
+      - run: pnpm install
+      - run: pnpm run build
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rnnoise-wasm-dist
+          path: dist/
+
+  create-release:
+    name: Upload WASM and JS files
+    runs-on: ubuntu-24.04
+    needs: [build-assets]
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: rnnoise-wasm-dist
+          path: dist/
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/rnnoise_wasm.d.ts
+            dist/rnnoise.d.ts
+            dist/rnnoise.js
+          prerelease: ${{ contains(github.ref, 'canary') }}
+
+  npm-publish:
+    name: Publish to npm
+    runs-on: ubuntu-24.04
+    needs: [create-release]
+    permissions:
+      contents: read
+      id-token: write
+    if: ${{ contains(github.ref, 'canary') }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: rnnoise-wasm-dist
+          path: dist/
+
+      # pnpm publish は CI では正常に動作しない
+      # https://github.com/pnpm/pnpm/issues/4937
+      - run: npm publish --provenance --no-git-checks
+        if: ${{ !contains(github.ref, 'canary') }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }} 
+
+      - run: npm publish --provenance --no-git-checks --tag canary
+        if: ${{ contains(github.ref, 'canary') }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }} 
+
+  slack_notify_failed:
+    name: Slack Notification
+    needs: [npm-publish]
+    runs-on: ubuntu-24.04
+    if: failure()
+    steps:
+      - uses: actions/checkout@v4
+      - uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: media-processors
+          SLACK_COLOR: danger
+          SLACK_ICON_EMOJI: ":japanese_ogre:"
+          SLACK_TITLE: Failure e2e-test
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}

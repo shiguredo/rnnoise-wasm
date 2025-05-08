@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <link rel="icon" href="data:,">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RNNoise-Wasm DevTools</title>
+</head>
+
+<body>
+  <h1>RNNoise-Wasm DevTools</h1>
+  <h2>GitHub: <a href="https://github.com/shiguredo/rnnoise-wasm">https://github.com/shiguredo/rnnoise-wasm</a>
+  </h2>
+  <div style="display: flex; gap: 10px;">
+    <div>
+      <h2>Audio Source</h2>
+      <canvas id="original-waveform" width="400" height="100" style="border: 1px solid black;"></canvas>
+    </div>
+    <div>
+      <h2>Processed / Output</h2>
+      <canvas id="processed-waveform" width="400" height="100" style="border: 1px solid black;"></canvas>
+    </div>
+  </div>
+
+  <!-- Simplified Controls -->
+  <div style="margin-top: 10px; display: flex; align-items: center; gap: 10px;">
+    <button id="toggleGenerateButton" disabled>Start Audio Processing</button>
+    <button id="toggleDenoiseButton" disabled>Enable Denoise</button> <!-- Disabled until generation starts -->
+    <button id="togglePlaybackButton" disabled>Start Playback</button> <!-- Disabled until generation starts -->
+    <div>
+      <label for="speakerSelect" style="margin-left: 10px;">Select Speaker:</label>
+      <select id="speakerSelect" name="speakerSelect" disabled></select>
+    </div>
+  </div>
+
+  <div style="margin-top: 10px;">
+    <fieldset
+      style="width: calc(800px + 10px - 12px); /* canvas_width*2 + gap - fieldset_padding*2 (approx) */ padding: 5px;">
+      <legend>Audio Input Source:</legend>
+      <div>
+        <input type="radio" id="micInput" name="noiseSource" value="mic" checked>
+        <label for="micInput">Microphone Input</label>
+        <div style="padding-left: 20px; margin-top: 5px;">
+          <div style="margin-bottom: 10px;">
+            <button id="requestMicPermissionButton">メディアデバイスをロード</button>
+          </div>
+          <div style="margin-bottom: 5px;">
+            <label for="micSelect">Select Microphone:</label>
+            <select id="micSelect" name="micSelect" disabled></select> <!-- Initially disabled -->
+          </div>
+          <p style="margin-bottom: 3px; margin-top: 5px; font-weight: bold;">Microphone Settings (Apply on Start):</p>
+          <div>
+            <input type="checkbox" id="echoCancellationCheckbox">
+            <label for="echoCancellationCheckbox">Enable Echo Cancellation</label>
+          </div>
+          <div>
+            <input type="checkbox" id="autoGainControlCheckbox">
+            <label for="autoGainControlCheckbox">Enable Auto Gain Control</label>
+          </div>
+        </div>
+      </div>
+      <div>
+        <input type="radio" id="autoNoise" name="noiseSource" value="auto">
+        <label for="autoNoise">Auto-generated Noise</label>
+      </div>
+      <div style="padding-left: 20px;">
+        <p style="margin-bottom: 5px; margin-top: 8px; font-weight: bold;">Parameters for Auto-generated Noise:</p>
+        <div class="control-item">
+          <label for="noiseScaleSlider">Amplitude (Scale):</label>
+          <input type="range" id="noiseScaleSlider" min="0" max="1" step="0.01" value="0.2" />
+          <span id="noiseScaleValue">0.20</span>
+        </div>
+        <div class="control-item">
+          <label for="noiseAlphaSlider">Smoothing (Alpha):</label>
+          <input type="range" id="noiseAlphaSlider" min="0.01" max="0.99" step="0.01" value="0.5" />
+          <span id="noiseAlphaValue">0.50</span>
+        </div>
+      </div>
+    </fieldset>
+  </div>
+
+  <script type="module" src="./src/main.ts"></script>
+  <audio id="outputAudioElement" autoplay style="display:none;"></audio>
+</body>
+
+</html>

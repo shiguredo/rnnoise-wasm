@@ -2,9 +2,9 @@
 set -eux
 
 # 各種設定
-EMSCRIPTEN_VERSION=3.1.0
-RNNOISE_REPOSITORY=https://github.com/shiguredo/rnnoise
-RNNOISE_VERSION=2022.1.0
+EMSCRIPTEN_VERSION=4.0.8
+RNNOISE_REPOSITORY=https://github.com/xiph/rnnoise
+RNNOISE_VERSION=70f1d256acd4b34a572f999a05c87bf00b67730d
 OPTIMIZE="-O2"
 
 # Emscriptenのバージョンチェック
@@ -33,10 +33,9 @@ ROOT_DIR=$PWD
 function build_rnnoise() {
   export CFLAGS="$1"
   CONFIGURE_FLAGS="$2"
-  NAME="$3"
 
-  mkdir $BUILD_DIR/$NAME
-  cd $BUILD_DIR/$NAME
+  mkdir $BUILD_DIR/rnnoise
+  cd $BUILD_DIR/rnnoise
 
   git clone $RNNOISE_REPOSITORY rnnoise
   cd rnnoise/
@@ -46,30 +45,35 @@ function build_rnnoise() {
   emconfigure ./configure --enable-shared=no $CONFIGURE_FLAGS
   emmake make
 
+  # [NOTE]
+  # STACK_SIZE のデフォルト値は 64 KB だけど、これだと実行時に
+  # メモリエラーが出たので大きめの値を指定している。
+  # 試した範囲では 70 KB ではエラーとなり、80 KB では大丈夫だった。
   emcc \
     -s STRICT=1 \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s MALLOC=emmalloc \
+    -s SINGLE_FILE=1 \
+    -s STACK_SIZE=200KB \
+    -s ENVIRONMENT=web \
     -s MODULARIZE=1 \
     -s EXPORT_ES6=1 \
-    -s EXPORTED_FUNCTIONS="['_rnnoise_process_frame', '_rnnoise_destroy', '_rnnoise_create', '_rnnoise_get_frame_size', '_rnnoise_model_from_string', '_rnnoise_model_free', '_malloc', '_free']" \
+    -s EXPORTED_RUNTIME_METHODS=HEAPF32 \
+    -s EXPORTED_FUNCTIONS="['_rnnoise_process_frame', '_rnnoise_destroy', '_rnnoise_create', '_rnnoise_get_frame_size', '_malloc', '_free']" \
     .libs/librnnoise.a \
-    -o $NAME.js
+    -o rnnoise.mjs
 
   cd $ROOT_DIR
 }
 
-# 通常版をビルド
-build_rnnoise "${OPTIMIZE}" "" "rnnoise"
+# ビルド
+build_rnnoise "${OPTIMIZE}" ""
 
-# SIMD版をビルド
-build_rnnoise "${OPTIMIZE} -msimd128" "--enable-wasm-simd" "rnnoise_simd"
+# TODO: SIMD に対応する際のコマンド
+# build_rnnoise "${OPTIMIZE} -msimd128" "--enable-x86-rtcd"
 
-# ビルド結果をコピー (JavaScriptファイルはSIMD対応・非対応のどちらでも同じなので使い回す）
-mkdir -p dist
-mv $BUILD_DIR/rnnoise/rnnoise/rnnoise.wasm dist/
-mv $BUILD_DIR/rnnoise/rnnoise/rnnoise.js src/rnnoise_wasm.js
-mv $BUILD_DIR/rnnoise_simd/rnnoise/rnnoise_simd.wasm dist/
+# ビルド結果をコピー
+mv $BUILD_DIR/rnnoise/rnnoise/rnnoise.mjs src/rnnoise_wasm.js
 
 # 一時ディレクトリを削除
 rm -rf $BUILD_DIR

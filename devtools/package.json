@@ -1,0 +1,14 @@
+{
+  "name": "@shiguredo/rnnoise-wasm-devtools",
+  "private": true,
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite dev",
+    "lint": "biome lint .",
+    "fmt": "biome format --write .",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@shiguredo/rnnoise-wasm": "workspace:*"
+  }
+}

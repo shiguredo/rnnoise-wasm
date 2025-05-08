@@ -1,5 +1,4 @@
-rnnoise-wasm
-============
+# rnnoise-wasm
 
 [![GitHub tag](https://img.shields.io/github/tag/shiguredo/rnnoise-wasm.svg)](https://github.com/shiguredo/rnnoise-wasm)
 [![npm version](https://badge.fury.io/js/@shiguredo%2Frnnoise-wasm.svg)](https://badge.fury.io/js/@shiguredo%2Frnnoise-wasm)
@@ -8,21 +7,20 @@ rnnoise-wasm
 [RNNoise](https://github.com/shiguredo/rnnoise) を WebAssembly (wasm) にビルドして
 JavaScript や TypeScript から利用するためのライブラリです。
 
-WebAssembly の SIMD に対応しているブラウザでは、自動的に SIMD版 の wasm ビルドが使用されます。
-
 ## About Shiguredo's open source software
 
 We will not respond to PRs or issues that have not been discussed on Discord. Also, Discord is only available in Japanese.
 
-Please read https://github.com/shiguredo/oss/blob/master/README.en.md before use.
+Please read <https://github.com/shiguredo/oss/blob/master/README.en.md> before use.
 
 ## 時雨堂のオープンソースソフトウェアについて
 
-利用前に https://github.com/shiguredo/oss をお読みください。
+利用前に <https://github.com/shiguredo/oss> をお読みください。
 
 ## 使い方
 
 以下のコマンドでパッケージがインストールできます:
+
 ```console
 $ npm install --save @shiguredo/rnnoise-wasm
 $ npm ls
@@ -30,6 +28,7 @@ $ npm ls
 ```
 
 TypeScript での使用方法は次のようになります:
+
 ```typescript
 import { Rnnoise } from "@shiguredo/rnnoise-wasm";
 
@@ -40,7 +39,7 @@ Rnnoise.load().then((rnnoise) => {
 
     // 音声フレームにノイズ抑制処理を適用する
     const frame = new Float32Array(...);
-    rnnoise.processFrame(frame);
+    denoiseState.processFrame(frame);
 
     ...
 
@@ -49,13 +48,40 @@ Rnnoise.load().then((rnnoise) => {
 });
 ```
 
+## オンライン RNNoise-Wasm DevTools
+
+<https://shiguredo.github.io/rnnoise-wasm/devtools/>
+
+[![Image from Gyazo](https://i.gyazo.com/18297a8820f23f17e230619437256e71.png)](https://gyazo.com/18297a8820f23f17e230619437256e71)
+
+## ビルド方法
+
+Ubuntu 24.04 か macOS 15 でのビルドを確認しています。
+
+- [Emscripten SDK](https://github.com/emscripten-core/emsdk)
+  - 4.0.8
+- Ubuntu 24.04: `sudo apt install -y autoconf automake libtool`
+- macOS 15: `brew install autoconf automake libtool`
+
+```bash
+./build-rnnoise.sh
+```
+
+```bash
+pnpm install
+pnpm build
+pnpm dev
+```
+
+<http://localhost:5173/> にアクセスして、RNNoise の動作を確認できます。
+
 ## ライセンス
 
 [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-```
-Copyright 2021-2021, Takeru Ohta (Original Author)
-Copyright 2021-2021, Shiguredo Inc.
+```text
+Copyright 2021-2025, Takeru Ohta (Original Author)
+Copyright 2021-2025, Shiguredo Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
