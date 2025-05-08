@@ -34,6 +34,11 @@ let micScriptProcessor: ScriptProcessorNode | null = null // For mic input proce
 const micAccumulatedSamples = new Float32Array(MIC_SCRIPT_PROCESSOR_BUFFER_SIZE * 2) // 蓄積用バッファ
 let micAccumulatedSamplesCount = 0 // 蓄積されたサンプル数
 
+// New state for microphone input buffering when playing back
+const processedMicFramesQueue: Float32Array[] = []
+let currentPlaybackFrame: Float32Array | null = null
+let currentPlaybackFrameReadIndex = 0
+
 // UI Elements
 let generateButton: HTMLButtonElement | null = null
 let denoiseButton: HTMLButtonElement | null = null
@@ -247,6 +252,11 @@ function stopGenerating() {
   clearCanvas(originalCanvasCtx, originalCanvas)
   clearCanvas(processedCanvasCtx, processedCanvas)
   stopMicInput() // Ensure mic is stopped
+
+  // Clear mic playback queue
+  processedMicFramesQueue.length = 0
+  currentPlaybackFrame = null
+  currentPlaybackFrameReadIndex = 0
 }
 
 async function startMicInput() {
@@ -347,11 +357,12 @@ async function startMicInput() {
         audioBufferProcessed.set(audioBufferOriginal) // Or copy original if not denoising
       }
 
-      // 再生が有効なら、新しいデータが準備できたことを示す
+      // 再生が有効なら、処理済みフレームをキューに追加
       if (isPlaying) {
-        // この時点で audioBufferOriginal と audioBufferProcessed には1フレーム分のデータが入っている
-        // handleAudioProcess がこれを読み出すため、readIndex をリセット
-        audioBufferReadIndex = 0
+        // audioBufferProcessed にはデノイズ済み(またはオリジナル)データが入っている
+        const frameToQueue = new Float32Array(frameSize)
+        frameToQueue.set(audioBufferProcessed)
+        processedMicFramesQueue.push(frameToQueue)
       }
 
       // 処理した分のデータを蓄積バッファから削除 (実際には残りのデータを先頭に移動)
@@ -443,6 +454,10 @@ function startAudioPlayback() {
   // For mic input, audioBufferReadIndex is reset by the mic's onaudioprocess.
   if (autoNoiseRadioButton?.checked) {
     audioBufferReadIndex = frameSize
+  } else if (micInputRadioButton?.checked) {
+    processedMicFramesQueue.length = 0 // Clear the queue for mic input
+    currentPlaybackFrame = null
+    currentPlaybackFrameReadIndex = 0
   }
 }
 
@@ -463,42 +478,55 @@ function handleAudioProcess(event: AudioProcessingEvent) {
   const outputBuffer = event.outputBuffer.getChannelData(0)
   const bufferSizeNode = outputBuffer.length // This is SCRIPT_PROCESSOR_BUFFER_SIZE
 
-  for (let i = 0; i < bufferSizeNode; i++) {
-    if (audioBufferReadIndex >= frameSize) {
-      // Buffer needs more data
-      if (autoNoiseRadioButton?.checked && rnnoise) {
-        // If auto-generating, produce a new frame
-        generateAndProcessFrameForAutoNoise() // Renamed for clarity
-      } else if (micInputRadioButton?.checked) {
-        // If mic input, data is supplied by micScriptProcessor.onaudioprocess
-        // which sets audioBufferOriginal/Processed and resets audioBufferReadIndex.
-        // If we've read the whole frame and micScriptProcessor hasn't provided a new one yet,
-        // we might output silence or repeat last sample.
-        // This implies micScriptProcessor should ideally operate on frameSize chunks
-        // and update audioBufferReadIndex.
-        // The current micScriptProcessor is set to frameSize, so this path
-        // (audioBufferReadIndex >= frameSize) *should* mean new mic data is pending or just arrived.
-        // If micScriptProcessor has run, audioBufferReadIndex will be 0.
-        // If it hasn't run in time, this loop might spin outputting silence.
-        // This suggests a tighter coupling or different buffering strategy might be needed for robustness.
-        // For now, assume micScriptProcessor keeps pace.
-      }
-
+  if (autoNoiseRadioButton?.checked && rnnoise) {
+    // Auto-generated noise path (existing logic)
+    for (let i = 0; i < bufferSizeNode; i++) {
       if (audioBufferReadIndex >= frameSize) {
-        // If still empty (e.g. mic not keeping up, or auto-noise failed)
+        generateAndProcessFrameForAutoNoise() // This resets audioBufferReadIndex for auto-noise
+      }
+      const sourceBuffer = isDenoisingEnabled ? audioBufferProcessed : audioBufferOriginal
+      if (audioBufferReadIndex < sourceBuffer.length) {
+        outputBuffer[i] = sourceBuffer[audioBufferReadIndex]
+      } else {
+        outputBuffer[i] = 0 // Safety for out-of-bounds
+      }
+      audioBufferReadIndex++
+    }
+  } else if (micInputRadioButton?.checked) {
+    // Microphone input path (new logic using queue)
+    for (let i = 0; i < bufferSizeNode; i++) {
+      if (currentPlaybackFrame === null || currentPlaybackFrameReadIndex >= frameSize) {
+        // Try to get a new frame from the queue
+        if (processedMicFramesQueue.length > 0) {
+          const shiftedFrame = processedMicFramesQueue.shift()
+          if (shiftedFrame === undefined) {
+            currentPlaybackFrame = null // Explicitly assign null if shift() result is undefined
+            outputBuffer[i] = 0
+            continue
+          }
+          // If shiftedFrame is not undefined, it can be assigned to currentPlaybackFrame
+          currentPlaybackFrame = shiftedFrame
+          currentPlaybackFrameReadIndex = 0
+        } else {
+          // Queue is empty, output silence for this sample
+          currentPlaybackFrame = null
+          outputBuffer[i] = 0
+          continue
+        }
+      }
+
+      if (currentPlaybackFrame) {
+        outputBuffer[i] = currentPlaybackFrame[currentPlaybackFrameReadIndex]
+        currentPlaybackFrameReadIndex++
+      } else {
         outputBuffer[i] = 0
-        continue
       }
     }
-
-    const sourceBuffer = isDenoisingEnabled ? audioBufferProcessed : audioBufferOriginal
-    // Ensure sourceBuffer has valid data, especially at the start or if mic is slow
-    if (audioBufferReadIndex < sourceBuffer.length) {
-      outputBuffer[i] = sourceBuffer[audioBufferReadIndex]
-    } else {
-      outputBuffer[i] = 0 // Safety for out-of-bounds, though ideally shouldn't happen
+  } else {
+    // Neither mode selected, or some other state - output silence
+    for (let i = 0; i < bufferSizeNode; i++) {
+      outputBuffer[i] = 0
     }
-    audioBufferReadIndex++
   }
 }
 
