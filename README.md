@@ -73,7 +73,7 @@ pnpm build
 pnpm dev
 ```
 
-<http://localhost:5173/> にアクセスして、RNNoise の動作を確認できます。
+<http://localhost:5173/> にアクセスして、RNNoise-Wasm の動作を確認できます。
 
 ## ライセンス
 
