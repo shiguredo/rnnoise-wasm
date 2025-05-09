@@ -1,14 +1,14 @@
 {
   "name": "@shiguredo/rnnoise-wasm",
-  "version": "2025.1.4",
+  "version": "2025.1.5",
   "description": "WebAssembly build of RNNoise",
   "type": "module",
-  "main": "dist/rnnoise.mjs",
-  "module": "dist/rnnoise.mjs",
+  "main": "dist/rnnoise.js",
+  "module": "dist/rnnoise.js",
   "exports": {
     ".": {
       "types": "./dist/rnnoise.d.ts",
-      "import": "./dist/rnnoise.mjs"
+      "import": "./dist/rnnoise.js"
     }
   },
   "scripts": {
