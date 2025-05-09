@@ -11,6 +11,11 @@
 
 ## develop
 
+## 2025.1.5
+
+- [FIX] rnnoise.mjs を rnnoise.js に修正する
+  - @voluntas
+
 ## 2025.1.4
 
 - [FIX] package.json に "type": "module" を追加し、 exports.require を削除する
