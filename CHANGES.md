@@ -11,6 +11,11 @@
 
 ## develop
 
+## 2025.1.3
+
+- [FIX] package.json に "type": "module" を追加し、 exports.require を削除する
+  - @voluntas
+
 ## 2025.1.2
 
 - [FIX] package.json に module / main / exports.require を追加する
