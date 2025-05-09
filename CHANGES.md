@@ -11,6 +11,11 @@
 
 ## develop
 
+## 2025.1.2
+
+- [FIX] package.json に module / main / exports.require を追加する
+  - @voluntas
+
 ## 2025.1.1
 
 - [FIX] npm publish が正常に行えなかったので再リリース
