@@ -4,8 +4,7 @@
 [![npm version](https://badge.fury.io/js/@shiguredo%2Frnnoise-wasm.svg)](https://badge.fury.io/js/@shiguredo%2Frnnoise-wasm)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-[RNNoise](https://github.com/shiguredo/rnnoise) を WebAssembly (wasm) にビルドして
-JavaScript や TypeScript から利用するためのライブラリです。
+[RNNoise](https://github.com/xiph/rnnoise) を WebAssembly (Wasm) にビルドしてブラウザで利用するライブラリです。
 
 ## About Shiguredo's open source software
 
@@ -17,17 +16,17 @@ Please read <https://github.com/shiguredo/oss/blob/master/README.en.md> before u
 
 利用前に <https://github.com/shiguredo/oss> をお読みください。
 
-## 使い方
-
-以下のコマンドでパッケージがインストールできます:
+## インストール
 
 ```console
-$ npm install --save @shiguredo/rnnoise-wasm
-$ npm ls
-└── @shiguredo/rnnoise-wasm@2022.2.0
+npm install --save @shiguredo/rnnoise-wasm
 ```
 
-TypeScript での使用方法は次のようになります:
+```console
+pnpm add @shiguredo/rnnoise-wasm
+```
+
+### 使い方
 
 ```typescript
 import { Rnnoise } from "@shiguredo/rnnoise-wasm";
@@ -52,7 +51,7 @@ Rnnoise.load().then((rnnoise) => {
 
 <https://shiguredo.github.io/rnnoise-wasm/devtools/>
 
-[![Image from Gyazo](https://i.gyazo.com/18297a8820f23f17e230619437256e71.png)](https://gyazo.com/18297a8820f23f17e230619437256e71)
+[![Image from Gyazo](https://i.gyazo.com/c6e24a593085de4780d0835edda63e23.png)](https://gyazo.com/c6e24a593085de4780d0835edda63e23)
 
 ## ビルド方法
 
@@ -73,7 +72,7 @@ pnpm build
 pnpm dev
 ```
 
-<http://localhost:5173/> にアクセスして、RNNoise の動作を確認できます。
+<http://localhost:5173/> にアクセスして、RNNoise-Wasm の動作を確認できます。
 
 ## ライセンス
 
@@ -96,4 +95,4 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
-生成された wasm ファイルのライセンスについては [rnnoise/COPYING](https://github.com/shiguredo/rnnoise) を参照してください。
+生成された wasm ファイルのライセンスについては [rnnoise/COPYING](https://github.com/xiph/rnnoise) を参照してください。
