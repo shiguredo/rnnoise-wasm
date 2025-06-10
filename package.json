@@ -1,6 +1,6 @@
 {
   "name": "@shiguredo/rnnoise-wasm",
-  "version": "2025.1.5",
+  "version": "2025.2.0-canary.0",
   "description": "WebAssembly build of RNNoise",
   "type": "module",
   "main": "dist/rnnoise.js",
