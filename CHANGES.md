@@ -11,6 +11,11 @@
 
 ## develop
 
+### misc
+
+- [UPDATE] actions/checkout と actions/download-artifact を v5 に上げる
+  - @miosakuma
+
 ## 2025.1.5
 
 - [FIX] rnnoise.mjs を rnnoise.js に修正する
