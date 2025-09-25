@@ -15,7 +15,7 @@ jobs:
         node: ['20', '22', '24']
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: mymindstorm/setup-emsdk@v14
         with:
           version: 4.0.8
@@ -44,7 +44,7 @@ jobs:
     runs-on: ubuntu-24.04
     if: failure()
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_CHANNEL: media-processors

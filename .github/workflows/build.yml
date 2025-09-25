@@ -13,7 +13,7 @@ jobs:
     name: Build WASM and JS files
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: mymindstorm/setup-emsdk@v14
         with:
           version: 4.0.8
@@ -46,9 +46,9 @@ jobs:
     runs-on: ubuntu-24.04
     needs: [build-assets]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Download Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: rnnoise-wasm-dist
           path: dist/
@@ -82,7 +82,7 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: actions/setup-node@v4
         with:
@@ -90,7 +90,7 @@ jobs:
           registry-url: https://registry.npmjs.org
 
       - name: Download Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: rnnoise-wasm-dist
           path: dist/
@@ -113,7 +113,7 @@ jobs:
     runs-on: ubuntu-24.04
     if: failure()
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_CHANNEL: media-processors
